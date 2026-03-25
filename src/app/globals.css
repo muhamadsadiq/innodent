@@ -2,25 +2,112 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: --color-dark-teal;
+
+  /* Font */
+  --font-inter: "Inter", sans-serif;
+
+  /* Base palette */
+  --color-white: #ffffff;
+  --color-light-gray: #d9d9d9;
+  --color-dark-teal: #1c9c9e;
+  --color-charcoal: #1e1e1e;
+  --color-gray: #8a8a8a;
+  --color-blue: #4e8fcc;
+  --color-pale-blue: #bdf5f6;
+  --color-soft-red: #ef5350;
+  --color-mint: #9ff6e6;
+  --color-teal: #5db6b8;
+  --color-sage: #9caf8d;
+  --color-lavender: #938dac;
+  --color-night-green: #021f21;
+  --color-pine-teal: #4b9ea0;
+  --color-olive-green: #94bb76;
+  --color-ash-gray: #bdbdbd;
+  --color-sky-blue: #83b1db;
+
+  /* Named variants from design spec */
+  --color-muted-lavender: rgba(147, 141, 172, 0.4);
+  --color-deep-indigo: rgba(101, 92, 137, 0.7);
+  --color-deep-blue: rgba(78, 143, 204, 0.7);
+  --color-muted-sage: rgba(156, 175, 141, 0.4);
+  --color-sky-tint: rgba(131, 177, 219, 0.4);
+  --color-deep-dark-teal: rgba(28, 156, 158, 0.7);
+  --color-muted-teal: rgba(93, 182, 184, 0.4);
+  --color-smoke-gray: rgba(138, 138, 138, 0.3);
+  --color-moss-green: rgba(113, 140, 92, 0.7);
+  --color-dark-teal-tint: rgba(28, 156, 158, 0.08);
+  --color-muted-blue: rgba(78, 143, 204, 0.4);
+  --color-soft-violet: rgba(131, 118, 183, 0.4);
+  --color-pale-olive: rgba(148, 187, 118, 0.4);
+  --color-mist-white: rgba(226, 226, 226, 0.4);
+  --color-deep-ash: rgba(189, 189, 189, 0.7);
+  --color-muted-ash: rgba(189, 189, 189, 0.4);
+  --color-deep-lavender: rgba(147, 141, 172, 0.7);
+  --color-smoke-ash: rgba(189, 189, 189, 0.3);
+  --color-white-tint: rgba(226, 226, 226, 0.2);
+  --color-deep-sage: rgba(156, 175, 141, 0.7);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/*@media (prefers-color-scheme: dark) {*/
+/*  :root {*/
+/*    --background: #0a0a0a;*/
+/*    --foreground: #ededed;*/
+/*  }*/
+/*}*/
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), Inter, sans-serif;
+}
+
+/* Typewriter effect for short hero keywords */
+.typewriter-wrap {
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.typewriter-text {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 0.08em solid currentColor;
+  width: 0;
+  animation:
+    typing 2.2s steps(16, end) 0.25s forwards,
+    caret-blink 0.8s step-end infinite;
+}
+
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: 16ch;
+  }
+}
+
+@keyframes caret-blink {
+  from,
+  to {
+    border-right-color: transparent;
+  }
+  50% {
+    border-right-color: currentColor;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .typewriter-text {
+    width: auto;
+    border-right: none;
+    animation: none;
+  }
 }

@@ -1,8 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { mainNav } from "@/constants/navigation";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 export default function Footer() {
+  const pathname = usePathname();
   return (
     <footer className="bg-[var(--color-dark-teal)] py-10 text-white 2xl:h-[270px] 2xl:py-0">
       <div className="mx-auto max-w-[1920px] px-4 sm:px-6 lg:px-10 xl:px-16 2xl:px-0">
@@ -45,7 +49,8 @@ export default function Footer() {
           <div className="hidden h-[140px] w-[4px] bg-white 2xl:mt-[60px] 2xl:block" />
 
           {/* CTA */}
-          <div className="text-center text-[18px] font-light leading-tight sm:text-[20px] lg:text-[22px] 2xl:ml-[258px] 2xl:mt-[151px] 2xl:text-[24px] 2xl:leading-[77.938px]">
+          <div className={`text-center text-[18px] font-light leading-tight sm:text-[20px] lg:text-[22px] 2xl:ml-[258px] 2xl:mt-[151px] 2xl:text-[24px] 2xl:leading-[77.938px]
+          ${pathname === "/" ? "opacity-100" : "opacity-0"}`}>
             <span aria-hidden="true" className="mr-1 inline-flex h-[24px] items-center 2xl:h-[34px]">
               <Image
                 src="/icons/explore-chevron-footer.svg"
@@ -57,7 +62,7 @@ export default function Footer() {
             </span>
             Explore{" "}
             <Link
-              href="/contact"
+              href="/products"
               className="font-normal underline decoration-solid [text-decoration-skip-ink:auto] [text-decoration-thickness:auto] [text-underline-offset:auto] [text-underline-position:from-font] transition-colors hover:text-[var(--color-pale-blue)]"
             >
               Best Selling Products

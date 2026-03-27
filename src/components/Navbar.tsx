@@ -18,7 +18,7 @@ export default function Navbar() {
         <Link href="/" className="flex items-center" aria-label="InnoDent Home" onClick={() => setMenuOpen(false)}>
           <Image
             src="/innodent-logo.svg"
-            alt="InnoDent AI logo"
+            alt="InnoDent logo"
             width={174}
             height={38}
             priority
@@ -46,8 +46,8 @@ export default function Navbar() {
 
         {/* CTA */}
         <div className="hidden lg:flex">
-          <Link
-            href="/contact"
+          <a
+            href="mailto:innodent.korea@gmail.com"
             className="inline-flex h-[32px] min-w-[92px] items-center justify-center rounded-full bg-[var(--color-pale-blue)] px-3 text-base font-light text-black transition-colors hover:bg-[var(--color-pine-teal)] hover:text-white 2xl:h-[35.435px] 2xl:w-[104.09px] 2xl:text-2xl"
           >
             <span className="inline-flex items-center justify-center gap-1 leading-none">
@@ -60,7 +60,7 @@ export default function Navbar() {
               />
               Email
             </span>
-          </Link>
+          </a>
         </div>
 
         {/* Mobile hamburger */}
@@ -114,8 +114,8 @@ export default function Navbar() {
             </Link>
           ))}
           <div className="mt-3 flex">
-            <Link
-              href="/contact"
+            <a
+              href="mailto:innodent.korea@gmail.com"
               onClick={() => setMenuOpen(false)}
               className="inline-flex h-[35.435px] w-[104.09px] items-center justify-center rounded-full bg-[var(--color-pale-blue)] text-sm font-light text-black transition-colors hover:bg-[var(--color-pine-teal)] hover:text-white"
             >
@@ -129,7 +129,7 @@ export default function Navbar() {
                 />
                 Email
               </span>
-            </Link>
+            </a>
           </div>
         </nav>
       )}

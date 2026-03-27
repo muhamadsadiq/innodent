@@ -31,7 +31,7 @@ export default function ProductCard({
 
   return (
     <Link
-      href={`/products`}
+      href={`/products/${slug}`}
       className={`group mx-auto flex w-full ${cardSizeClass} flex-col overflow-hidden rounded-[18px] transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(2,31,33,0.18)] sm:rounded-[22px] md:rounded-[26px] lg:rounded-[30px] 2xl:rounded-[40px]`}
       style={{
         backgroundColor: bgColor,
@@ -74,7 +74,7 @@ export default function ProductCard({
 
       <div className="flex min-h-[54px] items-end px-2 py-2 sm:min-h-[62px] sm:px-3 sm:py-3 md:min-h-[70px] lg:min-h-[84px] lg:px-4 lg:py-4 2xl:min-h-[95px] 2xl:pb-[27.36px] 2xl:pt-[15.66px]">
         <h3
-          className="mx-auto truncate text-center text-[18px] font-normal leading-tight text-white transition-colors duration-300 group-hover:text-[var(--card-hover-text-color)] sm:text-[20px] md:text-[22px] lg:text-[30px] 2xl:text-[52px] 2xl:leading-[52px]"
+          className="mx-auto truncate text-center text-[18px] font-normal leading-tight text-white transition-colors duration-300 sm:text-[20px] md:text-[22px] lg:text-[30px] 2xl:text-[52px] 2xl:leading-[52px]"
           title={name}
         >
           {name}

@@ -7,12 +7,6 @@ export interface NavItem {
   external?: boolean;
 }
 
-export interface SiteMetadata {
-  title: string;
-  description: string;
-  keywords?: string[];
-}
-
 export interface Feature {
   id: string;
   title: string;
@@ -20,13 +14,6 @@ export interface Feature {
   icon?: string;
 }
 
-export interface Service {
-  id: string;
-  name: string;
-  description: string;
-  features: string[];
-  price?: string;
-}
 
 export interface Testimonial {
   id: string;
@@ -53,6 +40,8 @@ export interface Product {
   shortDescription: string;
   description: string;
   features: string[];
+  component?: string | null;
+  shades?: string[];
   specs?: Record<string, string>;
   image: string;
   gallery?: string[];
@@ -75,10 +64,3 @@ export interface Address {
   coordinates?: { lat: number; lng: number };
 }
 
-export interface ContactFormData {
-  name: string;
-  email: string;
-  phone?: string;
-  subject: string;
-  message: string;
-}

@@ -1,114 +1,49 @@
-import { addresses } from "@/constants/addresses";
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Our Locations",
-  description:
-    "Find InnoDent AI offices around the world — US, Europe, and the Middle East.",
-};
+import Image from "next/image";
 
 export default function AddressPage() {
   return (
-    <div className="min-h-screen bg-[var(--color-night-green)] text-white">
-      {/* Header */}
-      <section className="border-b border-[var(--color-dark-teal-tint)] px-4 py-20 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center">
-          <span className="mb-3 inline-block rounded-full border border-[var(--color-dark-teal)] px-4 py-1 text-xs font-semibold uppercase tracking-widest text-[var(--color-teal)]">
-            Global Presence
-          </span>
-          <h1 className="mt-4 text-4xl font-bold sm:text-5xl">
-            Our{" "}
-            <span className="text-[var(--color-dark-teal)]">Locations</span>
-          </h1>
-          <p className="mx-auto mt-4 max-w-xl text-[var(--color-ash-gray)]">
-            InnoDent AI operates globally with offices across three continents
-            to support dental professionals wherever they are.
-          </p>
+    <div className="flex flex-col items-center px-4 mt-10 mb-12 sm:px-6 sm:mt-12 sm:mb-14 md:mt-14 md:mb-16 lg:px-8 lg:mt-16 lg:mb-20 2xl:mt-[60px] 2xl:mb-[114px]">
+      <Image
+        src={"/logo-hero.png"}
+        alt={"innnodent logo"}
+        width={477}
+        height={103}
+        className="h-auto w-full max-w-[260px] sm:max-w-[320px] md:max-w-[380px] lg:max-w-[430px] 2xl:max-w-[477px]"
+      />
+      <div className="text-center text-[var(--color-gray)] mt-10 sm:mt-14 md:mt-16 lg:mt-20 2xl:mt-[103px]">
+        <h2 className="font-bold uppercase leading-[30px] text-[26px] sm:text-[30px] sm:leading-[34px] md:text-[34px] md:leading-[36px] lg:text-[38px] lg:leading-[40px] 2xl:text-[40px] 2xl:leading-[40px]">
+          ADDRESS & LOCATION
+        </h2>
+        <hr className="m-auto w-full mt-5 max-w-full sm:mt-6 md:mt-7 2xl:max-w-[1200px] 2xl:mt-[31px] border-b-2 border-t-0 border-[var(--color-light-gray)]" />
+        <p className="mx-auto mt-4 text-base font-normal leading-7 max-w-full sm:mt-5 sm:text-lg sm:leading-8 md:text-xl md:leading-9 lg:text-2xl lg:leading-10 2xl:max-w-[1579px] 2xl:mt-5 2xl:text-3xl 2xl:leading-10">
+          Innodent operates out of a state-of-the-art manufacturing and R&D hub designed to meet international ISO standards. Our facility serves as the heart of our innovation, where every dental instrument is crafted with Korean engineering excellence. Use the interactive map below to find our headquarters and logistics center.
+        </p>
+      </div>
+      <div className="flex flex-col items-center gap-2 text-[var(--color-gray)] mt-8 sm:mt-10 md:mt-12 lg:mt-16 2xl:mt-[95px] 2xl:gap-[18px]">
+        <h1 className="font-bold text-[var(--color-dark-teal)] uppercase text-lg sm:text-xl md:text-2xl lg:text-3xl 2xl:text-[44px] 2xl:leading-[44px]">
+          Headquarters Address
+        </h1>
+        <h1 className="text-sm sm:text-base md:text-lg lg:text-2xl 2xl:text-[44px] 2xl:leading-[44px]">
+          5F 514, 15, Haeyang 3-ro, Sangnok-gu, Ansan-si, Gyeonggi-do, Korea
+        </h1>
+      </div>
+      <div className="flex flex-col items-center gap-2 text-[var(--color-gray)] mt-8 sm:mt-10 md:mt-12 lg:mt-16 2xl:mt-[95px] 2xl:gap-[18px] w-full">
+        <h1 className="font-bold text-[var(--color-dark-teal)] uppercase text-lg sm:text-xl md:text-2xl lg:text-3xl 2xl:text-[44px] 2xl:leading-[44px]">
+          Find Us on the Map
+        </h1>
+        <div className="mx-auto mt-4 w-full max-w-full 2xl:max-w-[1680px] 2xl:mt-[30px] overflow-hidden rounded-2xl sm:rounded-3xl md:rounded-4xl lg:rounded-[46px] 2xl:rounded-[60px] shadow-sm">
+          <iframe
+            width="100%"
+            height="945"
+            className="w-full border-0 h-[280px] sm:h-[360px] md:h-[480px] lg:h-[600px] 2xl:h-[945px]"
+            loading="lazy"
+            allowFullScreen
+            referrerPolicy="no-referrer-when-downgrade"
+            src="https://www.google.com/maps?q=37.285833,126.828222&z=15&output=embed"
+            title="Innodent Map"
+          />
         </div>
-      </section>
-
-      {/* Offices */}
-      <section className="px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl space-y-12">
-          {addresses.map((addr) => (
-            <div
-              key={addr.id}
-              className="grid gap-8 rounded-2xl border border-[var(--color-dark-teal-tint)] bg-[var(--color-charcoal)]/20 p-8 lg:grid-cols-2"
-            >
-              {/* Info */}
-              <div className="flex flex-col justify-center space-y-4">
-                <span className="text-xs font-semibold uppercase tracking-widest text-[var(--color-teal)]">
-                  {addr.label}
-                </span>
-
-                <div className="space-y-1">
-                  <p className="text-lg font-semibold text-[var(--color-pale-blue)]">
-                    {addr.street}
-                  </p>
-                  <p className="text-[var(--color-ash-gray)]">
-                    {addr.city}
-                    {addr.state ? `, ${addr.state}` : ""} {addr.postalCode}
-                  </p>
-                  <p className="text-[var(--color-ash-gray)]">{addr.country}</p>
-                </div>
-
-                <div className="space-y-2 pt-2">
-                  <div className="flex items-center gap-3">
-                    <span className="text-[var(--color-dark-teal)]">📞</span>
-                    <a
-                      href={`tel:${addr.phone.replace(/\s/g, "")}`}
-                      className="text-sm font-medium text-[var(--color-light-gray)] hover:text-[var(--color-pale-blue)]"
-                    >
-                      {addr.phone}
-                    </a>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-[var(--color-dark-teal)]">✉️</span>
-                    <a
-                      href={`mailto:${addr.email}`}
-                      className="text-sm font-medium text-[var(--color-light-gray)] hover:text-[var(--color-pale-blue)]"
-                    >
-                      {addr.email}
-                    </a>
-                  </div>
-                </div>
-              </div>
-
-              {/* Map embed placeholder */}
-              <div className="flex h-56 items-center justify-center rounded-xl border border-[var(--color-dark-teal-tint)] bg-[var(--color-dark-teal-tint)] lg:h-64">
-                {addr.mapEmbedUrl ? (
-                  <iframe
-                    src={addr.mapEmbedUrl}
-                    className="h-full w-full rounded-xl"
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    title={`Map — ${addr.label}`}
-                  />
-                ) : (
-                  <span className="text-4xl opacity-20">🗺️</span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Contact strip */}
-      <section className="px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl rounded-2xl border border-[var(--color-teal)] bg-[var(--color-dark-teal-tint)] p-10 text-center">
-          <h2 className="text-2xl font-bold">Can&apos;t Find a Nearby Office?</h2>
-          <p className="mt-2 text-[var(--color-ash-gray)]">
-            We support clinics remotely in 62 countries. Reach out and our team
-            will be with you wherever you are.
-          </p>
-          <a
-            href="/contact"
-            className="mt-6 inline-block rounded-full bg-[var(--color-dark-teal)] px-8 py-3 font-semibold text-white transition-colors hover:bg-[var(--color-pine-teal)]"
-          >
-            Contact Us
-          </a>
-        </div>
-      </section>
+      </div>
     </div>
   );
 }

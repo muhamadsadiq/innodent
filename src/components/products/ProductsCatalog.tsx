@@ -209,7 +209,7 @@ export default function ProductsCatalog({ products }: ProductsCatalogProps) {
 
   const renderListCard = (p: Product) => {
     const palette = isBestSellingProduct(p)? bestProductsPalette : getProductPalette(p);
-    return (<Link key={p.id} href={`/products`}
+    return (<Link key={p.id} href={`/products/${p.slug}`}
           className={`group rounded-[40px] border border-[var(--color-dark-teal-tint)] transition-all hover:border-[var(--card-hover-border-color)] flex gap-6`}
                   style={{
                     ["--card-hover-border-color" as string]: palette.chipBorderColor,

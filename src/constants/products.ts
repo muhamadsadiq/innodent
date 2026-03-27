@@ -1,6 +1,6 @@
 import { Product } from "@/types";
 
-export const products: Product[] = [
+const baseProducts: Omit<Product, "component" | "shades">[] = [
   // Catalog 1: Restorative Materials (6)
   {
     id: "c1-rm-1",
@@ -217,9 +217,69 @@ export const products: Product[] = [
   },
 ];
 
+const categoryDefaults: Record<string, { component: string; shades: string[] }> = {
+  "Restorative Materials": {
+    component: "1g x 2pcs",
+    shades: ["A1", "A2", "A3", "A3.5", "B2"],
+  },
+  Endodontics: {
+    component: "Assorted pack x 1 set",
+    shades: [],
+  },
+  Orthodontics: {
+    component: "Starter kit x 1 set",
+    shades: [],
+  },
+  "": {
+    component: "1 set",
+    shades: [],
+  },
+};
+
+type CategoryPalette = {
+  bgColor: string;
+  borderColor: string;
+  borderHoverColor: string;
+  titleColor: string;
+};
+
+const categoryPalettes: Record<string, CategoryPalette> = {
+  "Restorative Materials": {
+    bgColor: "var(--color-deep-blue)",
+    borderColor: "var(--color-sky-tint)",
+    borderHoverColor: "var(--color-deep-blue)",
+    titleColor: "var(--color-blue)",
+  },
+  Endodontics: {
+    bgColor: "var(--color-moss-green)",
+    borderColor: "var(--color-muted-sage)",
+    borderHoverColor: "var(--color-moss-green)",
+    titleColor: "var(--color-sage)",
+  },
+  Orthodontics: {
+    bgColor: "var(--color-deep-indigo)",
+    borderColor: "var(--color-muted-lavender)",
+    borderHoverColor: "var(--color-deep-indigo)",
+    titleColor: "var(--color-lavender)",
+  },
+};
+
+const defaultPalette: CategoryPalette = {
+  bgColor: "var(--color-gray)",
+  borderColor: "var(--color-muted-lavender)",
+  borderHoverColor: "var(--color-gray)",
+  titleColor: "var(--color-blue)",
+};
+
+
+export const products: Product[] = baseProducts.map((product) => {
+  const defaults = categoryDefaults[product.category] ?? categoryDefaults[""];
+  return {
+    ...product,
+    component: defaults.component,
+    shades: defaults.shades,
+  };
+});
+
 export const productCatalogs = ["Catalog 1", "Catalog 2", "Catalog 3"] as const;
 
-export const productCategories = [
-  "All",
-  ...Array.from(new Set(products.map((p) => p.category))),
-];

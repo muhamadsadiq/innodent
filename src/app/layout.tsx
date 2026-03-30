@@ -2,9 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { siteConfig } from "@/config/site";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import TopBar from "@/components/TopBar";
+import LayoutWrapper from "@/components/LayoutWrapper";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -59,19 +57,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} antialiased`}>
-        <TopBar
-          leftText = "innodent.korea@gmail.com"
-          rightText = "5F 514, 15, Haeyang 3-ro, Sangnok-gu, Ansan-si, Gyeonggi-do, Korea"/>
-        <Navbar />
-        <main className="min-h-screen">{children}</main>
-        <Footer />
-        <TopBar
-          leftText={
-            <>
-              &copy; <span className="font-bold">2026</span> Innodent • Developed by Neovaly
-            </>
-          }
-        />
+        <LayoutWrapper>{children}</LayoutWrapper>
       </body>
     </html>
   );

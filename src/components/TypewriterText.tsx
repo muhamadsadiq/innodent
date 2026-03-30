@@ -14,9 +14,9 @@ type TypewriterTextProps = {
 export default function TypewriterText({
   text,
   className,
-  typingSpeedMs = 90,
-  deletingSpeedMs = 55,
-  holdFullMs = 1400,
+  typingSpeedMs = 110,
+  deletingSpeedMs = 85,
+  holdFullMs = 2400,
   holdEmptyMs = 350,
 }: TypewriterTextProps) {
   const [displayed, setDisplayed] = useState("");

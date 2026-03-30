@@ -49,8 +49,7 @@ export default function Footer() {
           <div className="hidden h-[140px] w-[4px] bg-white 2xl:mt-[60px] 2xl:block" />
 
           {/* CTA */}
-          <div className={`text-center text-[18px] font-light leading-tight sm:text-[20px] lg:text-[22px] 2xl:ml-[258px] 2xl:mt-[151px] 2xl:text-[24px] 2xl:leading-[77.938px]
-          ${pathname === "/" ? "opacity-100" : "opacity-0"}`}>
+          <div className={"text-center text-[18px] font-light leading-tight sm:text-[20px] lg:text-[22px] 2xl:ml-[258px] 2xl:mt-[151px] 2xl:text-[24px]"}>
             <span aria-hidden="true" className="mr-1 inline-flex h-[24px] items-center 2xl:h-[34px]">
               <Image
                 src="/icons/explore-chevron-footer.svg"

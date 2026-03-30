@@ -6,7 +6,7 @@ import Link from "next/link";
 interface ProductCardProps {
   id: string;
   name: string;
-  slug: string;
+  slug?: string;
   image: string;
   featured?: boolean;
   bgColor?: string;
@@ -16,13 +16,13 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({
+  id,
   name,
-  slug,
   image,
   featured = false,
-  bgColor = "var(--color-deep-dark-teal)",
-  borderColor = "var(--color-dark-teal-tint)",
-  borderHoverColor = "var(--color-pale-blue)",
+  bgColor,
+  borderColor,
+  borderHoverColor,
   compact = false,
 }: ProductCardProps) {
   const cardSizeClass = compact
@@ -31,7 +31,7 @@ export default function ProductCard({
 
   return (
     <Link
-      href={`/products/${slug}`}
+      href={`/products/${id}`}
       className={`group mx-auto flex w-full ${cardSizeClass} flex-col overflow-hidden rounded-[18px] transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(2,31,33,0.18)] sm:rounded-[22px] md:rounded-[26px] lg:rounded-[30px] 2xl:rounded-[40px]`}
       style={{
         backgroundColor: bgColor,
@@ -66,15 +66,15 @@ export default function ProductCard({
               alt=""
               width={59}
               height={59}
-              className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 lg:h-10 lg:w-10 2xl:h-[58.7px] 2xl:w-[58.7px]"
+              className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 lg:h-14 lg:w-14 2xl:h-[58.7px] 2xl:w-[58.7px]"
             />
           </div>
         )}
       </div>
 
-      <div className="flex min-h-[54px] items-end px-2 py-2 sm:min-h-[62px] sm:px-3 sm:py-3 md:min-h-[70px] lg:min-h-[84px] lg:px-4 lg:py-4 2xl:min-h-[95px] 2xl:pb-[27.36px] 2xl:pt-[15.66px]">
+      <div className="flex min-h-[54px] items-center px-2 py-2 sm:min-h-[62px] sm:px-3 sm:py-3 md:min-h-[70px] lg:min-h-[84px] lg:px-4 lg:py-4 2xl:min-h-[95px] 2xl:pb-[15.66px] 2xl:pt-[15.66px]">
         <h3
-          className="mx-auto truncate text-center text-[18px] font-normal leading-tight text-white transition-colors duration-300 sm:text-[20px] md:text-[22px] lg:text-[30px] 2xl:text-[52px] 2xl:leading-[52px]"
+          className="mx-auto truncate text-center text-[20px] font-normal leading-tight text-white transition-colors duration-300 sm:text-[20px] md:text-[22px] lg:text-[30px] 2xl:text-[30px] 2xl:leading-[40px]"
           title={name}
         >
           {name}

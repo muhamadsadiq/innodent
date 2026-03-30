@@ -9,6 +9,7 @@ import Image from "next/image";
 
 type ProductsCatalogProps = {
   products: Product[];
+  categoryColors?: Record<string, CategoryPalette>;
 };
 
 type ViewMode = "grid" | "list";
@@ -27,38 +28,7 @@ type CategoryPalette = {
 const BEST_SELLING_FILTER = "Best Selling";
 const NEW_FILTER = "New Items";
 
-const categoryPalettes: Record<string, CategoryPalette> = {
-  "Restorative Materials": {
-    bgColor: "var(--color-deep-blue)",
-    borderColor: "var(--color-sky-tint)",
-    borderHoverColor: "var(--color-deep-blue)",
-    titleColor: "var(--color-blue)",
-    titleBgColor: "var(--color-sky-blue)",
-    chipBorderColor: "var(--color-deep-blue)",
-    chipTextColor: "var(--color-sky-blue)",
-    imageBorderColor: "var(--color-muted-teal)",
-  },
-  Endodontics: {
-    bgColor: "var(--color-moss-green)",
-    borderColor: "var(--color-muted-sage)",
-    borderHoverColor: "var(--color-moss-green)",
-    titleColor: "var(--color-sage)",
-    titleBgColor: "var(--color-sage)",
-    chipBorderColor: "var(--color-deep-sage)",
-    chipTextColor: "var(--color-sage)",
-    imageBorderColor: "var(--color-muted-sage)",
-  },
-  Orthodontics: {
-    bgColor: "var(--color-deep-indigo)",
-    borderColor: "var(--color-muted-lavender)",
-    borderHoverColor: "var(--color-deep-indigo)",
-    titleColor: "var(--color-lavender)",
-    titleBgColor: "var(--color-lavender)",
-    chipBorderColor: "var(--color-deep-lavender)",
-    chipTextColor: "var(--color-lavender)",
-    imageBorderColor: "var(--color-muted-lavender)",
-  },
-};
+// No hardcoded categoryPalettes - fetched from database instead
 
 const defaultPalette: CategoryPalette = {
   bgColor: "var(--color-gray)",
@@ -97,25 +67,25 @@ const getGridColsClass = (itemsCount: number) =>
     : "grid-cols-1 md:grid-cols-2 xl:grid-cols-3";
 
 function isBestSellingProduct(product: Product) {
-  return product.featured || /best\s*seller/i.test(product.badge ?? "");
+  return product.isBestSeller;
 }
 
 function isNewProduct(product: Product) {
-  return /new/i.test(product.badge ?? "");
+  return product.isNew;
 }
 
-function getProductPalette(product: Product): CategoryPalette {
+function getProductPalette(product: Product, categoryColors?: Record<string, CategoryPalette>): CategoryPalette {
   const key = product.category?.trim();
-  if (key && categoryPalettes[key]) {
-    return categoryPalettes[key];
+  if (key && categoryColors && categoryColors[key]) {
+    return categoryColors[key];
   }
   return defaultPalette;
 }
 
-function getCategoryTitleColor(categoryName: string) {
+function getCategoryTitleColor(categoryName: string, categoryColors?: Record<string, CategoryPalette>) {
   const key = categoryName.trim();
-  if (key && categoryPalettes[key]) {
-    return categoryPalettes[key].titleColor;
+  if (key && categoryColors && categoryColors[key]) {
+    return categoryColors[key].titleColor;
   }
   return defaultPalette.titleColor;
 }
@@ -145,7 +115,7 @@ function buildCatalogGroups(products: Product[]) {
   });
 }
 
-export default function ProductsCatalog({ products }: ProductsCatalogProps) {
+export default function ProductsCatalog({ products, categoryColors }: ProductsCatalogProps) {
   const filterOptions = useMemo(() => {
     const categories = Array.from(new Set(products.map((p) => p.category.trim()).filter(Boolean)));
     const uncategorizedCatalogs = Array.from(
@@ -208,16 +178,17 @@ export default function ProductsCatalog({ products }: ProductsCatalogProps) {
   };
 
   const renderListCard = (p: Product) => {
-    const palette = isBestSellingProduct(p)? bestProductsPalette : getProductPalette(p);
+    const palette = isBestSellingProduct(p)? bestProductsPalette : getProductPalette(p, categoryColors);
     return (<Link key={p.id} href={`/products/${p.slug}`}
-          className={`group rounded-[40px] border border-[var(--color-dark-teal-tint)] transition-all hover:border-[var(--card-hover-border-color)] flex gap-6`}
+          className={`group rounded-[40px] transition-all flex gap-6`}
                   style={{
                     ["--card-hover-border-color" as string]: palette.chipBorderColor,
                   }}
     >
-      <div className="h-[315px] w-[540px] bg-white rounded-[40px] border-[3px] border-[var(--border-color)]"
+      <div className="relative h-[315px] w-[540px] bg-white rounded-[40px] border-[3px] border-[var(--border-color)] group-hover:border-[var(--border-hover-color)]"
            style={{
              ["--border-color" as string]: palette.imageBorderColor,
+             ["--border-hover-color" as string]: palette.bgColor,
            }}>
         <Image
           src={p.image}
@@ -228,6 +199,23 @@ export default function ProductsCatalog({ products }: ProductsCatalogProps) {
           sizes={"(max-width: 640px) 100vw, (max-width: 1536px) 50vw, 547.687px"}
           className="h-[315px] w-[540px] object-contain object-center"
         />
+
+        {/* ── Featured star badge ── */}
+        {p.isBestSeller && (
+          <div
+            aria-label="Featured product"
+            title="Featured"
+            className="absolute right-2 top-2 flex items-center justify-center sm:right-3 sm:top-3 md:right-4 md:top-4 lg:right-5 lg:top-5 2xl:right-[30px] 2xl:top-[30px]"
+          >
+            <Image
+              src="/icons/ic_round-star.svg"
+              alt=""
+              width={59}
+              height={59}
+              className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 lg:h-[50px] lg:w-[50px]"
+            />
+          </div>
+        )}
       </div>
 
       <div className="min-w-0 flex-1 pt-[22px]">
@@ -240,14 +228,24 @@ export default function ProductsCatalog({ products }: ProductsCatalogProps) {
             {p.name}
           </h3>
           <div className="flex flex-wrap items-center gap-2">
-            {p.badge && (
+            {p.isBestSeller && (
               <span
                 className="rounded-full border border-[var(--border-color)] px-[23px] text-[18px] leading-[54.802px] text-[var(--text-color)]"
                 style={{
                   ["--text-color" as string]: palette.chipTextColor,
                   ["--border-color" as string]: palette.chipBorderColor,
                 }}>
-                {p.badge}
+                {"Best Seller"}
+              </span>
+            )}
+            {p.isNew && (
+              <span
+                className="rounded-full border border-[var(--border-color)] px-[23px] text-[18px] leading-[54.802px] text-[var(--text-color)]"
+                style={{
+                  ["--text-color" as string]: palette.chipTextColor,
+                  ["--border-color" as string]: palette.chipBorderColor,
+                }}>
+                {"New"}
               </span>
             )}
             <span
@@ -329,7 +327,7 @@ export default function ProductsCatalog({ products }: ProductsCatalogProps) {
           <div className="mx-auto flex flex-col gap-10">
             {bestProducts.length > 0 && (
               <section className="space-y-4">
-                <h2 className="text-center text-[42px] leading-[42px] font-semibold text-[var(--color-gray)]">
+                <h2 className="text-center text-[28px] sm:text-[28px] md:text-[32px] lg:text-[34px] xl:text-[36px] leading-[42px] font-semibold text-[var(--color-gray)]">
                   Best Selling Products
                 </h2>
                 <div className="flex flex-col gap-6 bg-[var(--color-dark-teal-tint)] px-[54px] py-[52px] rounded-[64px]">{bestProducts.map((p) => renderListCard(p))}</div>
@@ -347,7 +345,7 @@ export default function ProductsCatalog({ products }: ProductsCatalogProps) {
 
               return (
                 <section key={`list-${catalogName}`} className="space-y-6">
-                  <h2 className="text-center text-[42px] leading-[42px] font-semibold text-[var(--color-gray)]">
+                  <h2 className="text-center text-[28px] sm:text-[28px] md:text-[32px] lg:text-[34px] xl:text-[36px] leading-[42px] font-semibold text-[var(--color-gray)]">
                     {catalogName}
                   </h2>
 
@@ -388,7 +386,7 @@ export default function ProductsCatalog({ products }: ProductsCatalogProps) {
           <div className="sm:mx-4">
             {bestProducts.length > 0 && (
               <section className="rounded-[64px] border bg-[var(--color-dark-teal-tint)] px-[53px] pb-[56.8px]">
-                <h2 className="mb-[48.8px] mt-[42px] text-center text-[42px] leading-[42px] font-semibold text-[var(--color-gray)]">
+                <h2 className="mb-[48.8px] mt-[42px] text-center text-[28px] sm:text-[28px] md:text-[32px] lg:text-[34px] xl:text-[36px] leading-[42px] font-semibold text-[var(--color-gray)]">
                   Best Selling Products (2025)
                 </h2>
                 <div className={`grid gap-[18px] ${getGridColsClass(bestProducts.length)}`}>
@@ -399,7 +397,7 @@ export default function ProductsCatalog({ products }: ProductsCatalogProps) {
                       name={p.name}
                       slug={p.slug}
                       image={p.image}
-                      featured={p.featured}
+                      featured={p.isBestSeller}
                       bgColor={bestProductsPalette.bgColor}
                       borderColor={bestProductsPalette.borderColor}
                       borderHoverColor={bestProductsPalette.borderHoverColor}
@@ -421,12 +419,12 @@ export default function ProductsCatalog({ products }: ProductsCatalogProps) {
                   if (!namedEntries.length) {
                     return (
                       <>
-                        <h2 className="mb-[48.8px] mt-[42px] text-center text-[42px] leading-[42px] font-semibold text-[var(--color-gray)]">
+                        <h2 className="mb-[8.8px] lg:mb-[18.8px] xl:mb-[28.8px] mt-[42px] text-center text-[28px] sm:text-[28px] md:text-[32px] lg:text-[34px] xl:text-[36px] leading-[42px] font-semibold text-[var(--color-gray)]">
                           {catalogName}
                         </h2>
                         <div className={`grid gap-[18px] ${getGridColsClass(uncategorized.length)}`}>
                           {uncategorized.map((p) => {
-                            const palette = getProductPalette(p);
+                            const palette = getProductPalette(p, categoryColors);
                             return (
                               <ProductCard
                                 key={p.id}
@@ -434,7 +432,6 @@ export default function ProductsCatalog({ products }: ProductsCatalogProps) {
                                 name={p.name}
                                 slug={p.slug}
                                 image={p.image}
-                                featured={p.featured}
                                 bgColor={palette.bgColor}
                                 borderColor={palette.borderColor}
                                 borderHoverColor={palette.borderHoverColor}
@@ -452,14 +449,14 @@ export default function ProductsCatalog({ products }: ProductsCatalogProps) {
                       {namedEntries.map(([categoryName, categoryProducts]) => (
                         <div key={`${catalogName}-${categoryName}`} className="space-y-4">
                           <h3
-                            className="mb-[48.8px] mt-[42px] text-center text-[42px] leading-[42px] font-semibold"
-                            style={{ color: getCategoryTitleColor(categoryName) }}
+                            className="mb-[8.8px] lg:mb-[18.8px] xl:mb-[28.8px] mt-[42px] text-center text-[28px] sm:text-[28px] md:text-[32px] lg:text-[34px] xl:text-[36px] leading-[42px] font-semibold"
+                            style={{ color: getCategoryTitleColor(categoryName, categoryColors) }}
                           >
                             {categoryName}
                           </h3>
                           <div className={`grid gap-[18px] ${getGridColsClass(categoryProducts.length)}`}>
                             {categoryProducts.map((p) => {
-                              const palette = getProductPalette(p);
+                              const palette = getProductPalette(p, categoryColors);
                               return (
                                 <ProductCard
                                   key={p.id}
@@ -467,7 +464,6 @@ export default function ProductsCatalog({ products }: ProductsCatalogProps) {
                                   name={p.name}
                                   slug={p.slug}
                                   image={p.image}
-                                  featured={p.featured}
                                   bgColor={palette.bgColor}
                                   borderColor={palette.borderColor}
                                   borderHoverColor={palette.borderHoverColor}

@@ -1,5 +1,31 @@
 // Common types for the application
 
+// User and Authentication Types
+export type Role = 'ADMIN' | 'SUPER_ADMIN';
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: Role;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ActivityLog {
+  id: string;
+  userId: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  entityName: string;
+  changes?: Record<string, unknown>;
+  ipAddress?: string;
+  userAgent?: string;
+  createdAt: Date;
+}
+
 export interface NavItem {
   title: string;
   href: string;
@@ -45,8 +71,8 @@ export interface Product {
   specs?: Record<string, string>;
   image: string;
   gallery?: string[];
-  badge?: string;
-  featured?: boolean;
+  isBestSeller?: boolean;
+  isNew?: boolean;
   brochureUrl?: string;
 }
 

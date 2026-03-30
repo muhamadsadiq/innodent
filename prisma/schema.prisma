@@ -1,0 +1,103 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Catalog {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  products Product[]
+
+  // Color palette for category styling
+  bgColor          String? // Background color for product cards
+  borderColor      String? // Border color for product cards
+  borderHoverColor String? // Border color on hover
+  titleColor       String? // Category title text color
+  titleBgColor     String? // Category title background color
+  chipBorderColor  String? // Category chip border color (for filters)
+  chipTextColor    String? // Category chip text color
+  imageBorderColor String? // Product image border color
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id               String  @id @default(uuid())
+  name             String
+  shortDescription String
+  description      String
+  features         String  @default("[]") // JSON array stored as string
+  component        String?
+  shades           String  @default("[]") // JSON array stored as string
+  image            String
+  gallery          String  @default("[]") // JSON array stored as string
+  isBestSeller     Boolean @default(false)
+  isNew            Boolean @default(false)
+  brochureUrl      String?
+  specs            String  @default("{}") // JSON object stored as string
+
+  catalogId String
+  catalog   Catalog @relation(fields: [catalogId], references: [id], onDelete: Cascade)
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([catalogId])
+  @@index([categoryId])
+  @@index([isBestSeller])
+  @@index([isNew])
+}
+
+model User {
+  id       String  @id @default(cuid())
+  email    String  @unique
+  password String // Will be hashed with bcrypt
+  name     String
+  role     String  @default("ADMIN") // Values: ADMIN or SUPER_ADMIN
+  isActive Boolean @default(true)
+
+  activityLogs ActivityLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ActivityLog {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  action     String // e.g., "CREATE_PRODUCT", "UPDATE_CATEGORY", "DELETE_CATALOG"
+  entityType String // e.g., "Product", "Category", "Catalog"
+  entityId   String
+  entityName String // The name/title of the entity for reference
+
+  changes   String? // JSON object of what changed
+  ipAddress String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([action])
+}

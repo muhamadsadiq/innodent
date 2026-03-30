@@ -6,14 +6,13 @@ import ProductCard from "@/components/ProductCard";
 import { getRelatedProducts } from "@/lib/db";
 import { prisma } from "@/lib/prisma";
 
+// Allow dynamic rendering on Heroku where database may not be available at build time
+export const dynamic = "force-dynamic";
+
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
-export async function generateStaticParams() {
-  const allProducts = await prisma.product.findMany();
-  return allProducts.map((p) => ({ slug: p.id }));
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;

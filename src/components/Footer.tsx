@@ -12,7 +12,7 @@ export default function Footer() {
       <div className="mx-auto max-w-[1920px] px-4 sm:px-6 lg:px-10 xl:px-16 2xl:px-0">
         <div className="flex flex-col items-center gap-8 2xl:flex-row 2xl:justify-center 2xl:gap-0">
           {/* Brand */}
-          <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left 2xl:mr-[60px] 2xl:mt-[74px] 2xl:gap-[35.82px]">
+          <div className="flex flex-col items-center gap-4 text-center 2xl:flex-row sm:text-left 2xl:mr-[60px] 2xl:mt-[74px] 2xl:gap-[35.82px]">
             <Image
               src="/logo-footer.svg"
               alt="Innodent logo"

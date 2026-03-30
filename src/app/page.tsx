@@ -7,6 +7,7 @@ import ExploreButton from "@/components/ExploreButton";
 import HeroSlider from "@/components/HeroSlider";
 import FAQAccordion from "@/components/FAQAccordion";
 import TypewriterText from "@/components/TypewriterText";
+import BackToTopButton from "@/components/BackToTopButton";
 
 export default async function HomePage() {
   const allProducts = await getAllProducts();
@@ -292,6 +293,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      <BackToTopButton />
     </div>
   );
 }

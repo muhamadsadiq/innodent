@@ -1,4 +1,5 @@
 import Image from "next/image";
+import BackToTopButton from "@/components/BackToTopButton";
 
 export default function AddressPage() {
   return (
@@ -44,6 +45,7 @@ export default function AddressPage() {
           />
         </div>
       </div>
+      <BackToTopButton />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import ProductsCatalog from "@/components/products/ProductsCatalog";
+import BackToTopButton from "@/components/BackToTopButton";
 import { getAllProducts, getAllCategories } from "@/lib/db";
 
 export const metadata: Metadata = {
@@ -73,6 +74,7 @@ export default async function ProductsPage() {
       </section>
 
       <ProductsCatalog products={products} categoryColors={categoryColors} />
+      <BackToTopButton />
     </div>
   );
 }

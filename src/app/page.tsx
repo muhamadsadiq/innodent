@@ -248,7 +248,7 @@ export default async function HomePage() {
           <iframe
             width="100%"
             height="945"
-            className="h-[220px] w-full border-0 sm:h-[360px] lg:h-[400px] xl:h-[420px] 2xl:h-[545px]"
+            className="w-full border-0 h-[220px] sm:h-[360px] lg:h-[400px] xl:h-[420px] 2xl:h-[545px]"
             loading="lazy"
             allowFullScreen
             referrerPolicy="no-referrer-when-downgrade"

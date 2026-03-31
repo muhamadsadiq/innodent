@@ -36,7 +36,7 @@ export default function AddressPage() {
           <iframe
             width="100%"
             height="945"
-            className="w-full border-0 h-[280px] sm:h-[360px] md:h-[480px] lg:h-[600px] 2xl:h-[945px]"
+            className="w-full bordrer-0 h-[320px] sm:h-[460px] lg:h-[500px] xl:h-[520px] 2xl:h-[645px]"
             loading="lazy"
             allowFullScreen
             referrerPolicy="no-referrer-when-downgrade"

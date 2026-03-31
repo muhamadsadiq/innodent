@@ -24,7 +24,7 @@ export default function LayoutWrapper({
         rightText="5F 514, 15, Haeyang 3-ro, Sangnok-gu, Ansan-si, Gyeonggi-do, Korea"
       />
       <Navbar />
-      <main className="min-h-screen">{children}</main>
+      <main >{children}</main>
       <Footer />
       <TopBar
         leftText={

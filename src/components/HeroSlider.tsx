@@ -35,7 +35,7 @@ export default function HeroSlider({ slides, autoSlideMs = 4000 }: HeroSliderPro
 
   return (
     <div className="flex w-full flex-col items-center">
-      <div className="relative mx-auto h-[260px] w-full max-w-[1680px] overflow-hidden rounded-[24px] sm:h-[360px] sm:rounded-[30px] md:h-[460px] lg:h-[620px] xl:h-[760px] xl:rounded-[44px] 2xl:h-[945px] 2xl:rounded-[60px]">
+      <div className="relative mx-auto h-[260px] w-full max-w-[1680px] overflow-hidden rounded-[24px] sm:h-[300px] sm:rounded-[30px] md:h-[500px] lg:h-[520px] xl:h-[560px] xl:rounded-[44px] 2xl:h-[745px] 2xl:rounded-[60px]">
         {slides.map((slide, index) => (
           <div
             key={slide.id}

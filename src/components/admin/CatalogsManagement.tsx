@@ -66,6 +66,8 @@ export default function CatalogsManagement() {
     brochureUrl: "",
     isProductClickable: true,
   });
+  const [initialBrochureUrl, setInitialBrochureUrl] = useState("");
+  const [uploadedBrochureUrl, setUploadedBrochureUrl] = useState("");
 
   useEffect(() => {
     void loadCatalogs();
@@ -93,6 +95,46 @@ export default function CatalogsManagement() {
       setLoading(false);
       setRefreshing(false);
     }
+  };
+
+  const resetFormState = () => {
+    setShowForm(false);
+    setEditingId(null);
+    setFormData({ name: "", shortName: "", brochureUrl: "", isProductClickable: true });
+    setBrochureError(null);
+    setSelectedBrochureName("");
+    setSelectedBrochureSize(0);
+    setInitialBrochureUrl("");
+    setUploadedBrochureUrl("");
+    if (brochureInputRef.current) {
+      brochureInputRef.current.value = "";
+    }
+  };
+
+  const deleteBrochureIfManaged = async (url: string | null | undefined) => {
+    if (!url || !url.startsWith("/uploads/catalogs/")) return;
+    try {
+      await fetch("/api/admin/catalog-brochures", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+    } catch (error) {
+      console.error("Failed to delete catalog brochure", error);
+    }
+  };
+
+  const handleCancelForm = async () => {
+    const shouldDeleteUnsavedUpload =
+      Boolean(uploadedBrochureUrl) &&
+      uploadedBrochureUrl !== initialBrochureUrl &&
+      formData.brochureUrl === uploadedBrochureUrl;
+
+    if (shouldDeleteUnsavedUpload) {
+      await deleteBrochureIfManaged(uploadedBrochureUrl);
+    }
+
+    resetFormState();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -124,13 +166,13 @@ export default function CatalogsManagement() {
         throw new Error(`Failed to save catalog (${response.status}).`);
       }
 
+      // If edit saved with a replacement brochure, clean old managed file now.
+      if (editingId && initialBrochureUrl && initialBrochureUrl !== formData.brochureUrl) {
+        await deleteBrochureIfManaged(initialBrochureUrl);
+      }
+
       await loadCatalogs();
-      setShowForm(false);
-      setEditingId(null);
-      setFormData({ name: "", shortName: "", brochureUrl: "", isProductClickable: true });
-      setBrochureError(null);
-      setSelectedBrochureName("");
-      setSelectedBrochureSize(0);
+      resetFormState();
     } catch (error) {
       console.error("Error saving catalog:", error);
       setError(error instanceof Error ? error.message : "Error saving catalog.");
@@ -140,12 +182,19 @@ export default function CatalogsManagement() {
   };
 
   const openCreateForm = () => {
+    if (showForm) {
+      void handleCancelForm();
+      return;
+    }
+
     setEditingId(null);
     setFormData({ name: "", shortName: "", brochureUrl: "", isProductClickable: true });
     setBrochureError(null);
     setSelectedBrochureName("");
     setSelectedBrochureSize(0);
-    setShowForm((prev) => !prev);
+    setInitialBrochureUrl("");
+    setUploadedBrochureUrl("");
+    setShowForm(true);
   };
 
   const handleEdit = (catalog: Catalog) => {
@@ -158,6 +207,8 @@ export default function CatalogsManagement() {
     setBrochureError(null);
     setSelectedBrochureName("");
     setSelectedBrochureSize(0);
+    setInitialBrochureUrl(catalog.brochureUrl || "");
+    setUploadedBrochureUrl("");
     setEditingId(catalog.id);
     setShowForm(true);
   };
@@ -173,16 +224,10 @@ export default function CatalogsManagement() {
       brochureInputRef.current.value = "";
     }
 
-    if (currentBrochure.startsWith("/uploads/catalogs/")) {
-      try {
-        await fetch("/api/admin/catalog-brochures", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: currentBrochure }),
-        });
-      } catch (error) {
-        console.error("Failed to delete catalog brochure", error);
-      }
+    await deleteBrochureIfManaged(currentBrochure);
+
+    if (currentBrochure === uploadedBrochureUrl) {
+      setUploadedBrochureUrl("");
     }
   };
 
@@ -208,9 +253,6 @@ export default function CatalogsManagement() {
     const formPayload = new FormData();
     formPayload.append("file", file);
     formPayload.append("catalogName", formData.name || "catalog");
-    if (formData.brochureUrl) {
-      formPayload.append("previousBrochure", formData.brochureUrl);
-    }
 
     try {
       const response = await fetch("/api/admin/catalog-brochures", {
@@ -223,7 +265,14 @@ export default function CatalogsManagement() {
       }
 
       const data = await response.json();
+
+      // If user uploads again in same edit session, remove previous unsaved upload.
+      if (uploadedBrochureUrl && uploadedBrochureUrl !== data.url) {
+        await deleteBrochureIfManaged(uploadedBrochureUrl);
+      }
+
       setFormData((prev) => ({ ...prev, brochureUrl: data.url }));
+      setUploadedBrochureUrl(data.url);
     } catch (error) {
       console.error("Brochure upload failed", error);
       setBrochureError("Failed to upload PDF. Please try again.");

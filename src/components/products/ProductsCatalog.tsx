@@ -124,6 +124,12 @@ function isLocalPdf(url: string) {
   return url.startsWith("/") && url.toLowerCase().endsWith(".pdf");
 }
 
+function getDownloadFilename(url: string) {
+  const parts = url.split("/");
+  const last = parts[parts.length - 1] || "catalog.pdf";
+  return last.toLowerCase().endsWith(".pdf") ? last : "catalog.pdf";
+}
+
 export default function ProductsCatalog({
   products,
   categoryColors,
@@ -423,7 +429,11 @@ export default function ProductsCatalog({
                     <a
                       href={getCatalogBrochureUrl(catalogName, catalogBrochureMap)}
                       className="mx-auto mt-5 inline-flex items-center justify-center gap-[5px] rounded-[60px] border-2 border-[var(--color-smoke-gray)] bg-white px-[18px] py-[6px] pl-[19px] pr-[18px] text-[var(--color-gray)] transition-colors hover:bg-[var(--color-mist-white)]"
-                      download={isLocalPdf(getCatalogBrochureUrl(catalogName, catalogBrochureMap))}
+                      download={
+                        isLocalPdf(getCatalogBrochureUrl(catalogName, catalogBrochureMap))
+                          ? getDownloadFilename(getCatalogBrochureUrl(catalogName, catalogBrochureMap))
+                          : undefined
+                      }
                       target={isLocalPdf(getCatalogBrochureUrl(catalogName, catalogBrochureMap)) ? undefined : "_blank"}
                       rel={isLocalPdf(getCatalogBrochureUrl(catalogName, catalogBrochureMap)) ? undefined : "noopener noreferrer"}
                     >
@@ -550,7 +560,11 @@ export default function ProductsCatalog({
                   <a
                     href={getCatalogBrochureUrl(catalogName, catalogBrochureMap)}
                     className="mx-auto mt-5 inline-flex items-center justify-center gap-[5px] rounded-[60px] border-2 border-[var(--color-smoke-gray)] bg-white px-[18px] py-[6px] pl-[19px] pr-[18px] text-[var(--color-gray)] transition-colors hover:bg-[var(--color-mist-white)]"
-                    download={isLocalPdf(getCatalogBrochureUrl(catalogName, catalogBrochureMap))}
+                    download={
+                      isLocalPdf(getCatalogBrochureUrl(catalogName, catalogBrochureMap))
+                        ? getDownloadFilename(getCatalogBrochureUrl(catalogName, catalogBrochureMap))
+                        : undefined
+                    }
                     target={isLocalPdf(getCatalogBrochureUrl(catalogName, catalogBrochureMap)) ? undefined : "_blank"}
                     rel={isLocalPdf(getCatalogBrochureUrl(catalogName, catalogBrochureMap)) ? undefined : "noopener noreferrer"}
                   >

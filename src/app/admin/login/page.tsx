@@ -17,6 +17,9 @@ export default function AdminLoginPage() {
     setError("");
     setLoading(true);
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
     try {
       const response = await fetch("/api/admin/auth/login", {
         method: "POST",
@@ -24,20 +27,30 @@ export default function AdminLoginPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
+        signal: controller.signal,
+        cache: "no-store",
       });
 
-      const data = await response.json();
+      const contentType = response.headers.get("content-type") || "";
+      const data =
+        contentType.includes("application/json")
+          ? ((await response.json()) as { error?: string })
+          : { error: "Unexpected server response" };
 
       if (!response.ok) {
         setError(data.error || "Login failed");
-        setLoading(false);
         return;
       }
 
-      // Redirect to dashboard
-      router.push("/admin/dashboard");
-    } catch {
-      setError("An error occurred. Please try again.");
+      router.replace("/admin/dashboard");
+    } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") {
+        setError("Login request timed out. Please try again.");
+      } else {
+        setError("An error occurred. Please try again.");
+      }
+    } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
     }
   };
@@ -54,8 +67,12 @@ export default function AdminLoginPage() {
               height={40}
             />
           </div>
-          <h1 className="text-3xl font-bold text-[var(--color-charcoal)]">Admin Dashboard</h1>
-          <p className="mt-2 text-[var(--color-gray)]">Sign in to your account</p>
+          <h1 className="text-3xl font-bold text-[var(--color-charcoal)]">
+            Admin Dashboard
+          </h1>
+          <p className="mt-2 text-[var(--color-gray)]">
+            Sign in to your account
+          </p>
         </div>
 
         {error && (

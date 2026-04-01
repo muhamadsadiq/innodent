@@ -62,6 +62,7 @@ export interface Product {
   name: string;
   slug: string;
   catalog: string;
+  catalogShortName?: string;
   category: string;
   shortDescription: string;
   description: string;
@@ -89,4 +90,3 @@ export interface Address {
   mapEmbedUrl?: string;
   coordinates?: { lat: number; lng: number };
 }
-

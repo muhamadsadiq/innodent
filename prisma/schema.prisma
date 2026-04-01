@@ -13,6 +13,7 @@ datasource db {
 model Catalog {
   id                 String    @id @default(cuid())
   name               String    @unique
+  shortName          String?
   brochureUrl        String?
   isProductClickable Boolean   @default(true)
   products           Product[]

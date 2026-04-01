@@ -9,7 +9,7 @@ import {
   pickFields,
 } from "@/lib/activity-log";
 
-const CATALOG_AUDIT_FIELDS = ["name", "brochureUrl", "isProductClickable"];
+const CATALOG_AUDIT_FIELDS = ["name", "shortName", "brochureUrl", "isProductClickable"];
 
 export async function PUT(
   request: NextRequest,
@@ -32,6 +32,7 @@ export async function PUT(
 
     const updateData: Record<string, unknown> = {
       name: data.name,
+      shortName: typeof data.shortName === "string" && data.shortName.trim() ? data.shortName.trim() : null,
       isProductClickable: data.isProductClickable !== false,
     };
 

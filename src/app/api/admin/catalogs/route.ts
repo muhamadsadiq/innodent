@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireAdminSession } from "@/lib/admin-security";
 import { buildCreateChanges, getRequestMetadata, pickFields } from "@/lib/activity-log";
 
-const CATALOG_AUDIT_FIELDS = ["name", "brochureUrl", "isProductClickable"];
+const CATALOG_AUDIT_FIELDS = ["name", "shortName", "brochureUrl", "isProductClickable"];
 
 export async function GET(request: NextRequest) {
   const auth = requireAdminSession(request, ["ADMIN", "SUPER_ADMIN"]);
@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
 
     const createData: Record<string, unknown> = {
       name: data.name,
+      shortName: typeof data.shortName === "string" && data.shortName.trim() ? data.shortName.trim() : null,
       isProductClickable: data.isProductClickable !== false,
     };
 

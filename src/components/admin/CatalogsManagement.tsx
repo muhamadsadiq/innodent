@@ -18,6 +18,7 @@ import {
 interface Catalog {
   id: string;
   name: string;
+  shortName?: string | null;
   brochureUrl?: string | null;
   isProductClickable?: boolean;
 }
@@ -46,6 +47,7 @@ export default function CatalogsManagement() {
   const brochureInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: "",
+    shortName: "",
     brochureUrl: "",
     isProductClickable: true,
   });
@@ -104,7 +106,7 @@ export default function CatalogsManagement() {
       await loadCatalogs();
       setShowForm(false);
       setEditingId(null);
-      setFormData({ name: "", brochureUrl: "", isProductClickable: true });
+      setFormData({ name: "", shortName: "", brochureUrl: "", isProductClickable: true });
       setBrochureError(null);
       setSelectedBrochureName("");
       setSelectedBrochureSize(0);
@@ -118,7 +120,7 @@ export default function CatalogsManagement() {
 
   const openCreateForm = () => {
     setEditingId(null);
-    setFormData({ name: "", brochureUrl: "", isProductClickable: true });
+    setFormData({ name: "", shortName: "", brochureUrl: "", isProductClickable: true });
     setBrochureError(null);
     setSelectedBrochureName("");
     setSelectedBrochureSize(0);
@@ -128,6 +130,7 @@ export default function CatalogsManagement() {
   const handleEdit = (catalog: Catalog) => {
     setFormData({
       name: catalog.name,
+      shortName: catalog.shortName || "",
       brochureUrl: catalog.brochureUrl || "",
       isProductClickable: catalog.isProductClickable !== false,
     });
@@ -276,6 +279,14 @@ export default function CatalogsManagement() {
               className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-[var(--color-dark-teal)] focus:ring-2 focus:ring-[var(--color-sky-tint)] focus:outline-none"
             />
 
+            <input
+              type="text"
+              placeholder="Short Name for badge (optional)"
+              value={formData.shortName}
+              onChange={(e) => setFormData({ ...formData, shortName: e.target.value })}
+              className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-[var(--color-dark-teal)] focus:ring-2 focus:ring-[var(--color-sky-tint)] focus:outline-none"
+            />
+
             <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-3">
               <label className="block text-sm font-semibold text-gray-700">Catalog PDF URL (optional)</label>
               <div className="relative">
@@ -376,16 +387,18 @@ export default function CatalogsManagement() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px] table-fixed">
+          <table className="w-full min-w-[1100px] table-fixed">
             <colgroup>
-              <col className="w-[30%]" />
-              <col className="w-[30%]" />
-              <col className="w-[16%]" />
               <col className="w-[24%]" />
+              <col className="w-[20%]" />
+              <col className="w-[24%]" />
+              <col className="w-[12%]" />
+              <col className="w-[20%]" />
             </colgroup>
             <thead className="bg-gradient-to-r from-gray-100 to-gray-50 border-b-2 border-gray-200">
               <tr>
                 <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Catalog Name</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Short Name</th>
                 <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">PDF / Link</th>
                 <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Clickable</th>
                 <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Actions</th>
@@ -394,7 +407,7 @@ export default function CatalogsManagement() {
             <tbody className="divide-y divide-gray-200">
               {catalogs.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center">
+                  <td colSpan={5} className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center justify-center gap-3">
                       <AlertCircle size={48} className="text-gray-300" />
                       <p className="text-lg font-semibold text-gray-500">No catalogs yet</p>
@@ -407,6 +420,9 @@ export default function CatalogsManagement() {
                   <tr key={catalog.id} className="hover:bg-blue-50 transition-all duration-200">
                     <td className="px-6 py-4 font-semibold text-gray-800 truncate" title={catalog.name}>
                       {catalog.name}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-700 truncate" title={catalog.shortName || ""}>
+                      {catalog.shortName || <span className="text-gray-400">Not set</span>}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-700">
                       {catalog.brochureUrl ? (

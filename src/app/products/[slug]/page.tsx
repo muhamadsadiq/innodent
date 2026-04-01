@@ -101,7 +101,7 @@ export default async function ProductDetailPage({ params }: Props) {
     name: product.name,
     description: product.shortDescription,
     image: product.image,
-    category: product.category?.name || product.catalog?.name,
+    category: product.category?.name || product.catalog?.shortName || product.catalog?.name,
     brand: siteConfig.name,
   });
 
@@ -155,7 +155,7 @@ export default async function ProductDetailPage({ params }: Props) {
           <div className="flex flex-col mt-6 sm:mt-8 md:mt-10 lg:mt-12 2xl:mt-[70px]">
             <div className="flex flex-col items-start gap-2 sm:gap-2.5 md:gap-3 2xl:gap-3">
               <span className="rounded-full border border-[var(--color-deep-blue)] px-3 sm:px-4 md:px-6 lg:px-7 2xl:px-[28px] py-1 sm:py-1.5 md:py-2 2xl:py-[7px] text-xs sm:text-sm md:text-lg lg:text-xl 2xl:text-[22px] text-[var(--color-sky-blue)]">
-                {product.category?.name || product.catalog?.name}
+                {product.category?.name || product.catalog?.shortName || product.catalog?.name}
               </span>
               {product.isBestSeller && (
                 <span className="rounded-full border border-amber-300 px-3 sm:px-4 md:px-6 lg:px-7 2xl:px-[28px] py-1 sm:py-1.5 md:py-2 2xl:py-[7px] text-xs sm:text-sm md:text-lg lg:text-xl 2xl:text-[22px] text-amber-600 bg-amber-50">
@@ -203,7 +203,7 @@ export default async function ProductDetailPage({ params }: Props) {
                       key={key}
                       className="rounded-xl border border-[var(--color-dark-teal-tint)] bg-[var(--color-charcoal)]/20 p-3 sm:p-4 md:p-5"
                     >
-                      <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-teal)]">
+                      <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-teal]">
                         {key}
                       </p>
                       <p className="mt-1 font-medium text-xs sm:text-sm md:text-base 2xl:text-sm text-[var(--color-pale-blue)]">{String(value)}</p>

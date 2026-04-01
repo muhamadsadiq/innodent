@@ -42,6 +42,7 @@ export default async function ProductsPage() {
     slug: p.id,
     name: p.name,
     catalog: p.catalog?.name || "",
+    catalogShortName: p.catalog?.shortName || "",
     category: p.category?.name || "",
     shortDescription: p.shortDescription,
     description: p.description,

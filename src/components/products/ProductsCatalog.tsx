@@ -285,7 +285,7 @@ export default function ProductsCatalog({
                   ["--border-color" as string]: palette.chipBorderColor,
                 }}
               >
-                {p.category?.trim() ? p.category : p.catalog}
+                {p.category?.trim() ? p.category : p.catalogShortName?.trim() || p.catalog}
               </span>
             </div>
           </div>

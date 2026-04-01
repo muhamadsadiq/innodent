@@ -1,42 +1,87 @@
 // components/admin/CatalogsManagement.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import {
+  BookOpen,
+  Plus,
+  Edit2,
+  Trash2,
+  AlertCircle,
+  RefreshCw,
+  UploadCloud,
+  FileText,
+  Link as LinkIcon,
+  XCircle,
+} from "lucide-react";
 
 interface Catalog {
   id: string;
   name: string;
+  brochureUrl?: string | null;
+  isProductClickable?: boolean;
 }
 
-export default function CatalogsManagement({ userRole }: { userRole: string | null }) {
+const MAX_PDF_SIZE = 15 * 1024 * 1024;
+
+function formatBytes(bytes: number) {
+  if (bytes === 0) return "0 B";
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return `${(bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 1)} ${sizes[i]}`;
+}
+
+export default function CatalogsManagement() {
   const [catalogs, setCatalogs] = useState<Catalog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [brochureUploading, setBrochureUploading] = useState(false);
+  const [brochureError, setBrochureError] = useState<string | null>(null);
+  const [selectedBrochureName, setSelectedBrochureName] = useState("");
+  const [selectedBrochureSize, setSelectedBrochureSize] = useState(0);
+  const brochureInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: "",
+    brochureUrl: "",
+    isProductClickable: true,
   });
 
   useEffect(() => {
-    loadCatalogs();
+    void loadCatalogs();
   }, []);
 
-  const loadCatalogs = async () => {
+  const loadCatalogs = async (isManualRefresh = false) => {
     try {
+      setError(null);
+      if (isManualRefresh) {
+        setRefreshing(true);
+      }
+
       const response = await fetch("/api/admin/catalogs");
-      const data = await response.json();
-      setCatalogs(data);
+      if (!response.ok) {
+        throw new Error(`Failed to load catalogs (${response.status}).`);
+      }
+
+      const data = (await response.json()) as Catalog[];
+      setCatalogs(Array.isArray(data) ? data : []);
+      setLastSyncedAt(new Date().toLocaleTimeString());
     } catch (error) {
       console.error("Error loading catalogs:", error);
-      alert("Error loading catalogs");
+      setError(error instanceof Error ? error.message : "Error loading catalogs.");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
     try {
       const url = editingId
@@ -48,79 +93,177 @@ export default function CatalogsManagement({ userRole }: { userRole: string | nu
         method,
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("adminToken")}`,
         },
         body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
-        alert("Error saving catalog");
-        return;
+        throw new Error(`Failed to save catalog (${response.status}).`);
       }
 
       await loadCatalogs();
       setShowForm(false);
       setEditingId(null);
-      setFormData({ name: "" });
+      setFormData({ name: "", brochureUrl: "", isProductClickable: true });
+      setBrochureError(null);
+      setSelectedBrochureName("");
+      setSelectedBrochureSize(0);
     } catch (error) {
       console.error("Error saving catalog:", error);
-      alert("Error saving catalog");
+      setError(error instanceof Error ? error.message : "Error saving catalog.");
     } finally {
       setLoading(false);
     }
   };
 
+  const openCreateForm = () => {
+    setEditingId(null);
+    setFormData({ name: "", brochureUrl: "", isProductClickable: true });
+    setBrochureError(null);
+    setSelectedBrochureName("");
+    setSelectedBrochureSize(0);
+    setShowForm((prev) => !prev);
+  };
+
   const handleEdit = (catalog: Catalog) => {
-    setFormData({ name: catalog.name });
+    setFormData({
+      name: catalog.name,
+      brochureUrl: catalog.brochureUrl || "",
+      isProductClickable: catalog.isProductClickable !== false,
+    });
+    setBrochureError(null);
+    setSelectedBrochureName("");
+    setSelectedBrochureSize(0);
     setEditingId(catalog.id);
     setShowForm(true);
   };
 
-  const handleDelete = async (catalogId: string, catalogName: string) => {
-    if (!confirm(`Are you sure you want to delete "${catalogName}"?`)) return;
+  const clearBrochure = async () => {
+    const currentBrochure = formData.brochureUrl;
+    setFormData((prev) => ({ ...prev, brochureUrl: "" }));
+    setSelectedBrochureName("");
+    setSelectedBrochureSize(0);
+    setBrochureError(null);
+
+    if (brochureInputRef.current) {
+      brochureInputRef.current.value = "";
+    }
+
+    if (currentBrochure.startsWith("/uploads/catalogs/")) {
+      try {
+        await fetch("/api/admin/catalog-brochures", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: currentBrochure }),
+        });
+      } catch (error) {
+        console.error("Failed to delete catalog brochure", error);
+      }
+    }
+  };
+
+  const handleBrochureUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== "application/pdf") {
+      setBrochureError("Only PDF files are allowed.");
+      return;
+    }
+
+    if (file.size > MAX_PDF_SIZE) {
+      setBrochureError("PDF size must be 15MB or less.");
+      return;
+    }
+
+    setBrochureUploading(true);
+    setBrochureError(null);
+    setSelectedBrochureName(file.name);
+    setSelectedBrochureSize(file.size);
+
+    const formPayload = new FormData();
+    formPayload.append("file", file);
+    formPayload.append("catalogName", formData.name || "catalog");
+    if (formData.brochureUrl) {
+      formPayload.append("previousBrochure", formData.brochureUrl);
+    }
 
     try {
-      const response = await fetch(`/api/admin/catalogs/${catalogId}`, {
-        method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem("adminToken")}`,
-        },
+      const response = await fetch("/api/admin/catalog-brochures", {
+        method: "POST",
+        body: formPayload,
       });
 
       if (!response.ok) {
-        alert("Error deleting catalog");
-        return;
+        throw new Error("Upload failed");
       }
 
-      await loadCatalogs();
+      const data = await response.json();
+      setFormData((prev) => ({ ...prev, brochureUrl: data.url }));
     } catch (error) {
-      console.error("Error deleting catalog:", error);
-      alert("Error deleting catalog");
+      console.error("Brochure upload failed", error);
+      setBrochureError("Failed to upload PDF. Please try again.");
+    } finally {
+      setBrochureUploading(false);
     }
   };
 
   if (loading && !showForm) {
-    return <div>Loading catalogs...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[260px]">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-dark-teal)] border-t-transparent"></div>
+          <p className="mt-4 text-[var(--color-gray)]">Loading catalogs...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-[var(--color-charcoal)]">Catalogs</h1>
-        <button
-          onClick={() => {
-            setShowForm(!showForm);
-            setEditingId(null);
-          }}
-          className="px-4 py-2 bg-[var(--color-dark-teal)] text-white rounded-lg hover:opacity-90"
-        >
-          {showForm ? "Cancel" : "Add Catalog"}
-        </button>
+    <div className="mx-auto w-full max-w-[1400px] space-y-8">
+      <div className="bg-gradient-to-r from-[var(--color-dark-teal)] to-[var(--color-moss-green)] rounded-xl p-8 text-white shadow-lg">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
+              <BookOpen size={40} />
+              Catalogs Management
+            </h1>
+            <p className="text-blue-100">Organize products into catalogs and maintain structure.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => void loadCatalogs(true)}
+              disabled={refreshing}
+              className="inline-flex items-center gap-2 rounded-lg bg-white/15 px-4 py-2 text-sm font-semibold text-white backdrop-blur hover:bg-white/25 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
+              {refreshing ? "Refreshing..." : "Refresh"}
+            </button>
+            <button
+              type="button"
+              onClick={openCreateForm}
+              className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-bold text-[var(--color-dark-teal)] hover:opacity-90"
+            >
+              <Plus size={18} />
+              {showForm ? "Cancel" : "Add Catalog"}
+            </button>
+          </div>
+        </div>
       </div>
 
+      {error && (
+        <div className="rounded-lg border-l-4 border-red-500 bg-red-50 p-4 text-red-700">
+          <div className="flex items-start gap-2">
+            <AlertCircle size={18} className="mt-0.5" />
+            <p className="text-sm font-semibold">{error}</p>
+          </div>
+        </div>
+      )}
+
       {showForm && (
-        <div className="bg-white p-6 rounded-lg mb-6 shadow">
-          <h2 className="text-xl font-semibold mb-4">
+        <div className="bg-white p-6 rounded-xl shadow-lg border-2 border-gray-100">
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">
             {editingId ? "Edit Catalog" : "Add New Catalog"}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -130,11 +273,88 @@ export default function CatalogsManagement({ userRole }: { userRole: string | nu
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-[var(--color-dark-teal)] focus:ring-2 focus:ring-[var(--color-sky-tint)] focus:outline-none"
             />
+
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-3">
+              <label className="block text-sm font-semibold text-gray-700">Catalog PDF URL (optional)</label>
+              <div className="relative">
+                <LinkIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="url"
+                  placeholder="https://drive.google.com/... or /uploads/catalogs/file.pdf"
+                  value={formData.brochureUrl}
+                  onChange={(e) => {
+                    setFormData({ ...formData, brochureUrl: e.target.value });
+                    setBrochureError(null);
+                  }}
+                  className="w-full rounded-lg border-2 border-gray-300 py-3 pl-10 pr-4 focus:border-[var(--color-dark-teal)] focus:ring-2 focus:ring-[var(--color-sky-tint)] focus:outline-none"
+                />
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-dashed border-gray-300 bg-white p-3">
+                <div className="flex items-center gap-2 text-sm text-gray-700">
+                  <UploadCloud size={16} className="text-[var(--color-dark-teal)]" />
+                  Upload PDF instead of pasting a link
+                </div>
+                <label className="inline-flex cursor-pointer items-center rounded-lg bg-[var(--color-dark-teal)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90">
+                  {brochureUploading ? "Uploading..." : "Choose PDF"}
+                  <input
+                    ref={brochureInputRef}
+                    type="file"
+                    accept="application/pdf"
+                    onChange={handleBrochureUpload}
+                    className="hidden"
+                    disabled={brochureUploading}
+                  />
+                </label>
+              </div>
+
+              {brochureError && <p className="text-sm text-red-600">{brochureError}</p>}
+
+              {formData.brochureUrl && (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 bg-white p-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="flex items-center gap-2 text-sm font-semibold text-gray-800">
+                      <FileText size={14} />
+                      {selectedBrochureName || "Brochure attached"}
+                    </p>
+                    <p className="mt-1 text-xs text-gray-500 truncate">{formData.brochureUrl}</p>
+                    {selectedBrochureSize > 0 && (
+                      <p className="text-xs text-gray-500">{formatBytes(selectedBrochureSize)}</p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void clearBrochure()}
+                    className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-100"
+                  >
+                    <XCircle size={13} />
+                    Remove
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-3">
+              <label className="flex items-center gap-3 text-sm font-semibold text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={formData.isProductClickable}
+                  onChange={(e) => setFormData({ ...formData, isProductClickable: e.target.checked })}
+                  className="h-4 w-4 rounded border-gray-300 text-[var(--color-dark-teal)] focus:ring-[var(--color-sky-tint)]"
+                />
+                Products in this catalog are clickable on website
+              </label>
+              <p className="text-xs text-gray-500">
+                Disable this to make products view-only and remove hover effects for this catalog.
+              </p>
+            </div>
+
             <button
               type="submit"
-              className="px-4 py-2 bg-[var(--color-moss-green)] text-white rounded-lg hover:opacity-90"
+              disabled={brochureUploading}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-moss-green)] text-white rounded-lg hover:opacity-90 font-semibold disabled:opacity-60"
             >
               {editingId ? "Update Catalog" : "Create Catalog"}
             </button>
@@ -142,38 +362,118 @@ export default function CatalogsManagement({ userRole }: { userRole: string | nu
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-[var(--color-mist-white)]">
-            <tr>
-              <th className="px-6 py-3 text-left text-sm font-semibold">Name</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {catalogs.map((catalog) => (
-              <tr key={catalog.id} className="border-t hover:bg-[var(--color-mist-white)]">
-                <td className="px-6 py-3">{catalog.name}</td>
-                <td className="px-6 py-3 flex gap-2">
-                  <button
-                    onClick={() => handleEdit(catalog)}
-                    className="px-3 py-1 bg-blue-500 text-white rounded hover:opacity-90 text-sm"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(catalog.id, catalog.name)}
-                    className="px-3 py-1 bg-red-500 text-white rounded hover:opacity-90 text-sm"
-                  >
-                    Delete
-                  </button>
-                </td>
+      <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 overflow-hidden">
+        <div className="p-6 bg-gradient-to-r from-gray-50 to-white border-b-2 border-gray-200">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <BookOpen size={24} className="text-[var(--color-dark-teal)]" />
+              Catalogs ({catalogs.length})
+            </h2>
+            {lastSyncedAt && (
+              <span className="text-xs font-medium text-gray-500">Last synced: {lastSyncedAt}</span>
+            )}
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[900px] table-fixed">
+            <colgroup>
+              <col className="w-[30%]" />
+              <col className="w-[30%]" />
+              <col className="w-[16%]" />
+              <col className="w-[24%]" />
+            </colgroup>
+            <thead className="bg-gradient-to-r from-gray-100 to-gray-50 border-b-2 border-gray-200">
+              <tr>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Catalog Name</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">PDF / Link</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Clickable</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {catalogs.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-6 py-12 text-center">
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <AlertCircle size={48} className="text-gray-300" />
+                      <p className="text-lg font-semibold text-gray-500">No catalogs yet</p>
+                      <p className="text-sm text-gray-400">Add your first catalog to get started.</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                catalogs.map((catalog) => (
+                  <tr key={catalog.id} className="hover:bg-blue-50 transition-all duration-200">
+                    <td className="px-6 py-4 font-semibold text-gray-800 truncate" title={catalog.name}>
+                      {catalog.name}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-700">
+                      {catalog.brochureUrl ? (
+                        <a
+                          href={catalog.brochureUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[var(--color-dark-teal)] hover:underline"
+                        >
+                          <FileText size={14} />
+                          Open brochure
+                        </a>
+                      ) : (
+                        <span className="text-gray-400">Not set</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      {catalog.isProductClickable !== false ? (
+                        <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                          Enabled
+                        </span>
+                      ) : (
+                        <span className="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                          View Only
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-nowrap items-center gap-2">
+                        <button
+                          onClick={() => handleEdit(catalog)}
+                          className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-all transform hover:scale-105 shadow-sm hover:shadow-md flex items-center gap-1 whitespace-nowrap"
+                        >
+                          <Edit2 size={16} />
+                          Edit
+                        </button>
+                        <button
+                          onClick={async () => {
+                            if (!confirm(`Are you sure you want to delete "${catalog.name}"?`)) return;
+                            try {
+                              setError(null);
+                              const response = await fetch(`/api/admin/catalogs/${catalog.id}`, {
+                                method: "DELETE",
+                              });
+                              if (!response.ok) {
+                                throw new Error(`Failed to delete catalog (${response.status}).`);
+                              }
+                              await loadCatalogs();
+                            } catch (error) {
+                              console.error("Error deleting catalog:", error);
+                              setError(error instanceof Error ? error.message : "Error deleting catalog.");
+                            }
+                          }}
+                          className="px-3 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all transform hover:scale-105 shadow-sm hover:shadow-md flex items-center gap-1 whitespace-nowrap"
+                        >
+                          <Trash2 size={16} />
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
 }
-

@@ -3,21 +3,21 @@ import { FAQItem } from "@/types";
 export const faqItems: FAQItem[] = [
   {
     id: "faq1",
-    question: "Are Innodent products compliant with international standards?",
+    question: "Are innodent products compliant with international standards?",
     answer:
-      "Yes. Innodent products are developed and manufactured in accordance with recognized quality and safety standards to ensure reliable clinical use and long-term durability.",
+      "Yes. All innodent products are manufactured in facilities certified with CE and ISO 13485. Our restorative, endodontic, and orthodontic materials are developed to meet strict global quality and safety standards, ensuring reliable clinical results for dental professionals worldwide.",
   },
   {
     id: "faq2",
-    question: "How can I request a product catalog or quotation?",
+    question: "What clinical categories does innodent specialize in?",
     answer:
-      "You can contact our team through the website’s inquiry form or official contact channels. Our representatives will provide detailed product information, pricing, and technical specifications upon request.",
+      "innodent specializes in high-performance dental materials and clinical solutions. Our portfolio includes advanced solutions for Restorative dentistry, Endodontics, and Orthodontics. We focus on providing essential materials that enhance clinical precision and efficiency.",
   },
   {
     id: "faq3",
-    question: "What types of dental equipment does Innodent provide?",
+    question: "How can I become an authorized distributor for innodent?",
     answer:
-      "You can contact our team through the website’s inquiry form or official contact channels. Our representatives will provide detailed product information, pricing, and technical specifications upon request.",
+      "We are always looking for dedicated partners to expand our global network. If you are interested in becoming a regional dealer, please send us your company profile and target market information. Our export team will review your application and get back to you within 2-3 business days.",
   },
 ];
 

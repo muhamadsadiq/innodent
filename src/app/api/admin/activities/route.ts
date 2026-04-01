@@ -1,37 +1,30 @@
 // app/api/admin/activities/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import jwt from "jsonwebtoken";
+import { requireAdminSession } from "@/lib/admin-security";
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
-
-function verifyToken(token: string) {
+function parseChanges(value: string | null): Record<string, unknown> | null {
+  if (!value) return null;
   try {
-    return jwt.verify(token, JWT_SECRET) as any;
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : null;
   } catch {
     return null;
   }
 }
 
+function actionSummary(action: string, entityType: string, entityName: string) {
+  const readable = action.replaceAll("_", " ").toLowerCase();
+  return `${readable} ${entityType.toLowerCase()} ${entityName}`;
+}
+
 export async function GET(request: NextRequest) {
+  const auth = requireAdminSession(request, ["SUPER_ADMIN"]);
+  if ("error" in auth) {
+    return auth.error;
+  }
+
   try {
-    const authHeader = request.headers.get("authorization");
-    const token = authHeader?.replace("Bearer ", "");
-
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-    }
-
-    // Only SUPER_ADMIN can view activity logs
-    if (decoded.role !== "SUPER_ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
     const logs = await prisma.activityLog.findMany({
       include: {
         user: {
@@ -49,12 +42,28 @@ export async function GET(request: NextRequest) {
       take: 100,
     });
 
-    return NextResponse.json(logs);
-  } catch (error) {
+    const normalized = logs.map((log) => {
+      const entityName = log.entityName || log.entityType;
+      return {
+        id: log.id,
+        action: log.action,
+        actionSummary: actionSummary(log.action, log.entityType, entityName),
+        entityType: log.entityType,
+        entityId: log.entityId,
+        entityName,
+        createdAt: log.createdAt,
+        ipAddress: log.ipAddress,
+        userAgent: log.userAgent,
+        changes: parseChanges(log.changes),
+        user: log.user,
+      };
+    });
+
+    return NextResponse.json(normalized);
+  } catch {
     return NextResponse.json(
       { error: "Failed to fetch activity logs" },
       { status: 500 }
     );
   }
 }
-

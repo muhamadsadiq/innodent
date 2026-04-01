@@ -1,14 +1,19 @@
 // components/admin/ProductsManagement.tsx
 "use client";
 
-import { useState, useEffect } from "react";
-import { getAllProducts } from "@/lib/db";
-import type { Product } from "@/types";
-import { Plus, Edit2, Trash2, Package, AlertCircle, CheckCircle, Info } from "lucide-react";
-
-interface ProductsManagementProps {
-  userRole: string | null;
-}
+import { useState, useEffect, useRef } from "react";
+import {
+  Plus,
+  Edit2,
+  Trash2,
+  Package,
+  AlertCircle,
+  CheckCircle,
+  UploadCloud,
+  Loader2,
+  XCircle,
+  Image as ImageIcon,
+} from "lucide-react";
 
 interface Catalog {
   id: string;
@@ -20,14 +25,52 @@ interface Category {
   name: string;
 }
 
-export default function ProductsManagement({ userRole }: ProductsManagementProps) {
-  const [products, setProducts] = useState<any[]>([]);
+type ProductRow = {
+  id: string;
+  name: string;
+  description: string;
+  shortDescription: string;
+  catalogId: string;
+  categoryId: string | null;
+  image: string;
+  component?: string | null;
+  shades?: string | null;
+  isBestSeller: boolean;
+  isNew: boolean;
+  catalog?: { id: string; name: string } | null;
+  category?: { id: string; name: string } | null;
+};
+
+const MAX_UPLOAD_SIZE = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/svg+xml",
+]);
+
+function formatBytes(bytes: number) {
+  if (bytes === 0) return "0 B";
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return `${(bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 1)} ${sizes[i]}`;
+}
+
+export default function ProductsManagement() {
+  const [products, setProducts] = useState<ProductRow[]>([]);
   const [catalogs, setCatalogs] = useState<Catalog[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [keepCatalogCategory, setKeepCatalogCategory] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [selectedImageName, setSelectedImageName] = useState<string>("");
+  const [selectedImageSize, setSelectedImageSize] = useState<number>(0);
+  const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -45,6 +88,23 @@ export default function ProductsManagement({ userRole }: ProductsManagementProps
     loadProducts();
     loadCatalogsAndCategories();
   }, []);
+
+  useEffect(() => {
+    if (!showForm && !editingId) {
+      setImagePreview(null);
+      setUploadError(null);
+      setSelectedImageName("");
+      setSelectedImageSize(0);
+    }
+  }, [showForm, editingId]);
+
+  useEffect(() => {
+    return () => {
+      if (localPreviewUrl) {
+        URL.revokeObjectURL(localPreviewUrl);
+      }
+    };
+  }, [localPreviewUrl]);
 
   const loadProducts = async () => {
     try {
@@ -100,7 +160,6 @@ export default function ProductsManagement({ userRole }: ProductsManagementProps
         method,
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("adminToken")}`,
         },
         body: JSON.stringify(dataToSend),
       });
@@ -129,6 +188,9 @@ export default function ProductsManagement({ userRole }: ProductsManagementProps
           isNew: false,
         });
         setKeepCatalogCategory(false);
+        setImagePreview(null);
+        setSelectedImageName("");
+        setSelectedImageSize(0);
       } else if (keepCatalogCategory) {
         // If adding and "keep catalog/category" is enabled, reset only the product details
         setFormData((prev) => ({
@@ -143,6 +205,9 @@ export default function ProductsManagement({ userRole }: ProductsManagementProps
           isNew: false,
           // Keep catalogId and categoryId
         }));
+        setImagePreview(null);
+        setSelectedImageName("");
+        setSelectedImageSize(0);
       } else {
         // If adding and "keep catalog/category" is disabled, close the form
         setShowForm(false);
@@ -158,6 +223,9 @@ export default function ProductsManagement({ userRole }: ProductsManagementProps
           isBestSeller: false,
           isNew: false,
         });
+        setImagePreview(null);
+        setSelectedImageName("");
+        setSelectedImageSize(0);
       }
     } catch (error) {
       console.error("Error saving product:", error);
@@ -167,14 +235,14 @@ export default function ProductsManagement({ userRole }: ProductsManagementProps
     }
   };
 
-  const handleEdit = (product: any) => {
+  const handleEdit = (product: ProductRow) => {
     // Parse shades array back to comma-separated string for editing
     let shadesString = "";
     if (product.shades) {
       try {
         const shadesArray = JSON.parse(product.shades);
         shadesString = Array.isArray(shadesArray) ? shadesArray.join(", ") : "";
-      } catch (e) {
+      } catch (_error) {
         shadesString = product.shades;
       }
     }
@@ -191,6 +259,9 @@ export default function ProductsManagement({ userRole }: ProductsManagementProps
       isBestSeller: product.isBestSeller,
       isNew: product.isNew,
     });
+    setImagePreview(product.image || null);
+    setSelectedImageName("");
+    setSelectedImageSize(0);
     setEditingId(product.id);
     setShowForm(true);
   };
@@ -201,9 +272,6 @@ export default function ProductsManagement({ userRole }: ProductsManagementProps
     try {
       const response = await fetch(`/api/admin/products/${productId}`, {
         method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem("adminToken")}`,
-        },
       });
 
       if (!response.ok) {
@@ -218,9 +286,103 @@ export default function ProductsManagement({ userRole }: ProductsManagementProps
     }
   };
 
+  const clearImage = async () => {
+    const currentImage = formData.image;
+
+    if (localPreviewUrl) {
+      URL.revokeObjectURL(localPreviewUrl);
+      setLocalPreviewUrl(null);
+    }
+
+    setFormData((prev) => ({ ...prev, image: "" }));
+    setImagePreview(null);
+    setUploadError(null);
+    setSelectedImageName("");
+    setSelectedImageSize(0);
+
+    if (imageInputRef.current) {
+      imageInputRef.current.value = "";
+    }
+
+    if (currentImage?.startsWith("/uploads/")) {
+      try {
+        await fetch("/api/admin/uploads", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ url: currentImage }),
+        });
+      } catch (error) {
+        console.error("Failed to delete previous uploaded image", error);
+      }
+    }
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const previousImage = formData.image;
+
+    if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+      setUploadError("Only JPG, PNG, WEBP, and SVG files are allowed.");
+      return;
+    }
+
+    if (file.size > MAX_UPLOAD_SIZE) {
+      setUploadError("File size must be 5MB or less.");
+      return;
+    }
+
+    if (localPreviewUrl) {
+      URL.revokeObjectURL(localPreviewUrl);
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setLocalPreviewUrl(previewUrl);
+    setImagePreview(previewUrl);
+    setSelectedImageName(file.name);
+    setSelectedImageSize(file.size);
+
+    const formPayload = new FormData();
+    formPayload.append("file", file);
+    formPayload.append("productName", formData.name || "product");
+    if (previousImage) {
+      formPayload.append("previousImage", previousImage);
+    }
+
+    setImageUploading(true);
+    setUploadError(null);
+
+    try {
+      const response = await fetch("/api/admin/uploads", {
+        method: "POST",
+        body: formPayload,
+      });
+
+      if (!response.ok) {
+        throw new Error("Upload failed");
+      }
+
+      const data = await response.json();
+      setFormData((prev) => ({ ...prev, image: data.url }));
+      setImagePreview(data.url);
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+      setLocalPreviewUrl(null);
+    } catch (error) {
+      console.error("Image upload failed", error);
+      setUploadError("Failed to upload image. Please try again.");
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
   if (loading && !showForm) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-[260px]">
         <div className="text-center">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-dark-teal)] border-t-transparent"></div>
           <p className="mt-4 text-[var(--color-gray)]">Loading products...</p>
@@ -302,12 +464,95 @@ export default function ProductsManagement({ userRole }: ProductsManagementProps
               <label className="block text-sm font-bold text-gray-700 mb-2">Image URL *</label>
               <input
                 type="text"
-                placeholder="https://example.com/image.jpg"
+                placeholder="https://example.com/image.jpg or /uploads/filename.jpg"
                 value={formData.image}
-                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, image: e.target.value });
+                  setImagePreview(e.target.value);
+                  setUploadError(null);
+                }}
                 required
                 className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-[var(--color-dark-teal)] focus:ring-2 focus:ring-[var(--color-sky-tint)] focus:outline-none transition-all"
               />
+              <div className="mt-4 rounded-xl border-2 border-dashed border-gray-300 bg-white p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <span className="rounded-lg bg-[var(--color-mist-white)] p-2">
+                      <UploadCloud size={20} className="text-[var(--color-dark-teal)]" />
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-800">Upload Product Image</p>
+                      <p className="text-xs text-gray-500">JPG, PNG, WEBP, SVG up to 5MB</p>
+                    </div>
+                  </div>
+                  <label className="inline-flex cursor-pointer items-center rounded-lg bg-[var(--color-dark-teal)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90">
+                    {imageUploading ? "Uploading..." : "Choose File"}
+                    <input
+                      ref={imageInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      disabled={imageUploading}
+                    />
+                  </label>
+                </div>
+
+                {uploadError && (
+                  <div className="mt-3 flex items-center gap-2 rounded-lg bg-red-50 p-2 text-sm text-red-700">
+                    <AlertCircle size={16} />
+                    <span>{uploadError}</span>
+                  </div>
+                )}
+
+                {imagePreview && (
+                  <div className="mt-4 flex flex-wrap items-center gap-4 rounded-xl border border-gray-200 bg-gray-50 p-3">
+                    <div className="relative h-24 w-24 overflow-hidden rounded-lg border bg-white">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={imagePreview} alt="Preview" className="h-full w-full object-contain" />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-gray-800">
+                        {selectedImageName || formData.image || "Uploaded image"}
+                      </p>
+                      <p className="mt-1 text-xs text-gray-500">
+                        {selectedImageSize > 0 ? formatBytes(selectedImageSize) : "Hosted image URL"}
+                      </p>
+                      <p className="mt-1 truncate text-xs text-gray-500">{formData.image}</p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {imageUploading ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                          <Loader2 size={12} className="animate-spin" />
+                          Uploading
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                          <CheckCircle size={12} />
+                          Ready
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={clearImage}
+                        className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-100"
+                      >
+                        <XCircle size={13} />
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {!imagePreview && !uploadError && (
+                  <div className="mt-4 flex items-center gap-2 text-xs text-gray-500">
+                    <ImageIcon size={14} />
+                    <span>No image selected yet.</span>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -418,9 +663,10 @@ export default function ProductsManagement({ userRole }: ProductsManagementProps
             <div className="flex gap-3 pt-4 border-t-2 border-gray-200">
               <button
                 type="submit"
+                disabled={imageUploading}
                 className="flex-1 px-6 py-3 bg-gradient-to-r from-[var(--color-moss-green)] to-[var(--color-dark-teal)] text-white font-bold rounded-lg hover:shadow-lg transition-all transform hover:scale-105"
               >
-                {editingId ? "Update Product" : "Create Product"}
+                {imageUploading ? "Please wait..." : editingId ? "Update Product" : "Create Product"}
               </button>
               <button
                 type="button"
@@ -446,8 +692,9 @@ export default function ProductsManagement({ userRole }: ProductsManagementProps
           </h2>
         </div>
 
-        <table className="w-full">
-          <thead className="bg-gradient-to-r from-gray-100 to-gray-50 border-b-2 border-gray-200">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[980px]">
+           <thead className="bg-gradient-to-r from-gray-100 to-gray-50 border-b-2 border-gray-200">
             <tr>
               <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Product Name</th>
               <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Catalog</th>
@@ -515,8 +762,8 @@ export default function ProductsManagement({ userRole }: ProductsManagementProps
             )}
           </tbody>
         </table>
-      </div>
-    </div>
-  );
-}
-
+        </div>
+       </div>
+     </div>
+   );
+ }

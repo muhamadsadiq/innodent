@@ -2,21 +2,44 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import ProductsCatalog from "@/components/products/ProductsCatalog";
 import BackToTopButton from "@/components/BackToTopButton";
-import { getAllProducts, getAllCategories } from "@/lib/db";
+import { getAllProducts, getAllCategories, getAllCatalogs } from "@/lib/db";
+import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
   title: "Products",
   description:
-    "Explore InnoDent AI's full range of AI-powered dental diagnostic and treatment planning tools.",
+    "Browse the full InnoDent catalog, including best-selling and new dental products across all categories.",
+  alternates: {
+    canonical: "/products",
+  },
+  openGraph: {
+    title: `Products | ${siteConfig.name}`,
+    description:
+      "Browse the full InnoDent catalog, including best-selling and new dental products across all categories.",
+    url: "/products",
+    images: [siteConfig.ogImage],
+  },
+};
+
+type CategoryPalette = {
+  bgColor: string;
+  borderColor: string;
+  borderHoverColor: string;
+  titleColor: string;
+  titleBgColor: string;
+  chipBorderColor: string;
+  chipTextColor: string;
+  imageBorderColor: string;
 };
 
 export default async function ProductsPage() {
   const dbProducts = await getAllProducts();
   const dbCategories = await getAllCategories();
+  const dbCatalogs = await getAllCatalogs();
 
-  // Convert database products to format expected by ProductsCatalog
-  const products: any[] = dbProducts.map((p) => ({
+  const products = dbProducts.map((p) => ({
     id: p.id,
+    slug: p.id,
     name: p.name,
     catalog: p.catalog?.name || "",
     category: p.category?.name || "",
@@ -33,8 +56,7 @@ export default async function ProductsPage() {
     brochureUrl: p.brochureUrl || undefined,
   }));
 
-  // Build category colors map from database
-  const categoryColors: Record<string, any> = {};
+  const categoryColors: Record<string, CategoryPalette> = {};
   dbCategories.forEach((cat) => {
     if (cat.name.trim()) {
       categoryColors[cat.name] = {
@@ -49,6 +71,20 @@ export default async function ProductsPage() {
       };
     }
   });
+
+  const catalogBrochureMap = Object.fromEntries(
+    dbCatalogs
+      .map((catalog) => {
+        const brochureUrl = (catalog as Record<string, unknown>).brochureUrl;
+        return [catalog.name, typeof brochureUrl === "string" ? brochureUrl : ""] as const;
+      })
+      .filter(([, brochureUrl]) => Boolean(brochureUrl)),
+  );
+
+  const nonClickableCatalogs = dbCatalogs
+    .filter((catalog) => (catalog as Record<string, unknown>).isProductClickable === false)
+    .map((catalog) => catalog.name);
+
   return (
     <div className="min-h-screen text-white">
       {/* Header */}
@@ -69,11 +105,16 @@ export default async function ProductsPage() {
             Explore Our Dental Solutions
           </h2>
           <hr className="m-auto w-full mt-1 md:mt-[10px] lg:mt-[31px] max-w-[1200px] border-b-2 border-t-0 border-[var(--color-light-gray)]" />
-          <p className={"mx-auto mt-5 text-[12px] sm:text-[14px] md:text-[18px] lg:text-[22px] xl:text-[26px] font-normal xl:leading-10 max-w-[1579px]"}>Discover the full range of Innodent’s professional equipment and precision instruments. From essential clinical tools to advanced operatory systems, our products are engineered to provide reliable performance and superior patient care. Browse our catalog below to find the right solutions for your modern dental practice.</p>
+          <p className={"mx-auto mt-5 text-[12px] sm:text-[14px] md:text-[18px] lg:text-[22px] xl:text-[26px] font-normal xl:leading-10 max-w-[1579px]"}>Experience the full spectrum of innodent’s advanced clinical materials. From high-performance restorative composites to specialized endodontic and orthodontic solutions, our products are precision-engineered to ensure superior clinical outcomes and long-term durability. Browse our comprehensive portfolio to find the perfect materials for modern dental practice.</p>
         </div>
       </section>
 
-      <ProductsCatalog products={products} categoryColors={categoryColors} />
+      <ProductsCatalog
+        products={products}
+        categoryColors={categoryColors}
+        catalogBrochureMap={catalogBrochureMap}
+        nonClickableCatalogs={nonClickableCatalogs}
+      />
       <BackToTopButton />
     </div>
   );

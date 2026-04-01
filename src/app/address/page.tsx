@@ -1,5 +1,23 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import BackToTopButton from "@/components/BackToTopButton";
+import { siteConfig } from "@/config/site";
+
+export const metadata: Metadata = {
+  title: "Address",
+  description:
+    "Visit InnoDent headquarters in Ansan-si, Gyeonggi-do, Korea, and view the map location.",
+  alternates: {
+    canonical: "/address",
+  },
+  openGraph: {
+    title: `Address | ${siteConfig.name}`,
+    description:
+      "Visit InnoDent headquarters in Ansan-si, Gyeonggi-do, Korea, and view the map location.",
+    url: "/address",
+    images: [siteConfig.ogImage],
+  },
+};
 
 export default function AddressPage() {
   return (
@@ -49,4 +67,3 @@ export default function AddressPage() {
     </div>
   );
 }
-

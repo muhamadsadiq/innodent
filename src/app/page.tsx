@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { getAllProducts, getFeaturedProducts, getAllCategories } from "@/lib/db";
@@ -8,6 +9,25 @@ import HeroSlider from "@/components/HeroSlider";
 import FAQAccordion from "@/components/FAQAccordion";
 import TypewriterText from "@/components/TypewriterText";
 import BackToTopButton from "@/components/BackToTopButton";
+import { siteConfig } from "@/config/site";
+
+export const metadata: Metadata = {
+  title: "Home",
+  description:
+    "Explore InnoDent dental products, highlights, FAQs, and contact details for modern clinics and distributors.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: `${siteConfig.name} | Dental Product Showcase`,
+    description:
+      "Explore InnoDent dental products, highlights, FAQs, and contact details for modern clinics and distributors.",
+    url: "/",
+    images: [siteConfig.ogImage],
+  },
+};
+
+type DbProduct = Awaited<ReturnType<typeof getAllProducts>>[number];
 
 export default async function HomePage() {
   const allProducts = await getAllProducts();
@@ -15,7 +35,7 @@ export default async function HomePage() {
   const allCategories = await getAllCategories();
 
   // Convert database products to component format
-  const convertProduct = (p: any) => ({
+  const convertProduct = (p: DbProduct) => ({
     id: p.id,
     name: p.name,
     catalog: p.catalog?.name || "",
@@ -58,9 +78,9 @@ export default async function HomePage() {
     .filter(cat => cat.products.length > 0); // Only categories with products
 
   const highlightsSlides = [
-    { id: 1, src: "/hero.png", alt: "Innodent highlight 1" },
-    { id: 2, src: "/product.png", alt: "Innodent highlight 2" },
-    { id: 3, src: "/slider-img.png", alt: "Innodent highlight 3" },
+    { id: 1, src: "/slider-img.png", alt: "Innodent highlight 1" },
+    { id: 2, src: "/slider-img2.jpeg", alt: "Innodent highlight 2" },
+    { id: 3, src: "/slider-img3.jpeg", alt: "Innodent highlight 3" },
   ];
 
   const getGridColsClass = (itemsCount: number) =>
@@ -99,7 +119,7 @@ export default async function HomePage() {
               <h1 className="mt-3 text-[30px] font-light leading-[1.02] text-[var(--color-blue)] sm:mt-4 sm:text-[42px] lg:text-[70px] 2xl:text-[88px] 2xl:leading-[88px]">
                 Advanced
                 <br />
-                <TypewriterText text="Dental Equipment" className="font-bold italic" />
+                <TypewriterText text="Dental Material" className="font-bold italic" />
                 <br />
                 Solutions
               </h1>
@@ -297,8 +317,4 @@ export default async function HomePage() {
     </div>
   );
 }
-
-
-
-
 

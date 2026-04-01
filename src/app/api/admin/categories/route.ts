@@ -1,7 +1,26 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { requireAdminSession } from "@/lib/admin-security";
+import { buildCreateChanges, getRequestMetadata, pickFields } from "@/lib/activity-log";
 
-export async function GET() {
+const CATEGORY_AUDIT_FIELDS = [
+  "name",
+  "bgColor",
+  "borderColor",
+  "borderHoverColor",
+  "titleColor",
+  "titleBgColor",
+  "chipBorderColor",
+  "chipTextColor",
+  "imageBorderColor",
+];
+
+export async function GET(request: NextRequest) {
+  const auth = requireAdminSession(request, ["ADMIN", "SUPER_ADMIN"]);
+  if ("error" in auth) {
+    return auth.error;
+  }
+
   try {
     const categories = await prisma.category.findMany({
       orderBy: { name: "asc" },
@@ -17,8 +36,14 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = requireAdminSession(request, ["ADMIN", "SUPER_ADMIN"]);
+  if ("error" in auth) {
+    return auth.error;
+  }
+
   try {
     const data = await request.json();
+    const requestMeta = getRequestMetadata(request);
 
     const category = await prisma.category.create({
       data: {
@@ -34,6 +59,24 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    await prisma.activityLog.create({
+      data: {
+        userId: auth.session.userId,
+        action: "CREATE_CATEGORY",
+        entityType: "Category",
+        entityId: category.id,
+        entityName: category.name,
+        changes: JSON.stringify(
+          buildCreateChanges(
+            pickFields(category as unknown as Record<string, unknown>, CATEGORY_AUDIT_FIELDS),
+            CATEGORY_AUDIT_FIELDS,
+          ),
+        ),
+        ipAddress: requestMeta.ipAddress,
+        userAgent: requestMeta.userAgent,
+      },
+    });
+
     return NextResponse.json(category, { status: 201 });
   } catch (error) {
     console.error("Error creating category:", error);
@@ -43,4 +86,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

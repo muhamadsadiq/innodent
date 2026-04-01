@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { siteConfig } from "@/config/site";
 import LayoutWrapper from "@/components/LayoutWrapper";
+import { buildOrganizationJsonLd, getSiteUrl } from "@/lib/seo";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -11,38 +12,50 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: getSiteUrl(),
   title: {
     default: siteConfig.name,
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
   keywords: [
-    "dental",
-    "AI",
-    "artificial intelligence",
-    "dentistry",
-    "dental care",
+    "dental products",
+    "dental equipment",
+    "restorative materials",
+    "endodontics",
+    "orthodontics",
     "InnoDent",
   ],
-  authors: [
-    {
-      name: siteConfig.creator,
-    },
-  ],
+  authors: [{ name: siteConfig.creator }],
   creator: siteConfig.creator,
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: siteConfig.url,
+    url: "/",
     title: siteConfig.name,
     description: siteConfig.description,
     siteName: siteConfig.name,
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1200,
+        height: 630,
+        alt: `${siteConfig.name} preview image`,
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: siteConfig.name,
     description: siteConfig.description,
-    creator: "@innodent",
+    images: [siteConfig.ogImage],
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
   icons: {
     icon: "/favicon.ico",
@@ -54,9 +67,15 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const organizationJsonLd = buildOrganizationJsonLd();
+
   return (
     <html lang="en">
       <body className={`${inter.variable} antialiased`}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
         <LayoutWrapper>{children}</LayoutWrapper>
       </body>
     </html>

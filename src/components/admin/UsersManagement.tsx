@@ -2,44 +2,58 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Users, AlertCircle, Shield, User as UserIcon } from "lucide-react";
+import { Users, AlertCircle, Shield, User as UserIcon, RefreshCw } from "lucide-react";
+
+type AdminUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: "ADMIN" | "SUPER_ADMIN";
+  isActive: boolean;
+  createdAt?: string;
+};
 
 export default function UsersManagement() {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
 
   useEffect(() => {
-    loadUsers();
+    void loadUsers();
   }, []);
 
-  const loadUsers = async () => {
+  const loadUsers = async (isManualRefresh = false) => {
     try {
       setError(null);
-      const token = localStorage.getItem("adminToken");
-      if (!token) {
-        setError("No authentication token found");
-        setLoading(false);
-        return;
+      if (isManualRefresh) {
+        setRefreshing(true);
       }
 
       const response = await fetch("/api/admin/users", {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
+        method: "GET",
       });
 
       if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
+        if (response.status === 403) {
+          throw new Error("Only Super Admin can access user management.");
+        }
+        if (response.status === 401) {
+          throw new Error("Your session has expired. Please log in again.");
+        }
+        throw new Error(`Failed to load users (${response.status}).`);
       }
 
-      const data = await response.json();
-      setUsers(data || []);
+      const data = (await response.json()) as AdminUser[];
+      setUsers(Array.isArray(data) ? data : []);
+      setLastSyncedAt(new Date().toLocaleTimeString());
     } catch (error) {
       console.error("Error loading users:", error);
-      setError("Failed to load users");
+      setError(error instanceof Error ? error.message : "Failed to load users.");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -66,16 +80,30 @@ export default function UsersManagement() {
             </h1>
             <p className="text-blue-100">Manage administrator accounts and permissions</p>
           </div>
+          <button
+            type="button"
+            onClick={() => void loadUsers(true)}
+            disabled={refreshing}
+            className="inline-flex items-center gap-2 rounded-lg bg-white/15 px-4 py-2 text-sm font-semibold text-white backdrop-blur hover:bg-white/25 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
+            {refreshing ? "Refreshing..." : "Refresh"}
+          </button>
         </div>
       </div>
 
       {/* Users Table */}
       <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 overflow-hidden">
         <div className="p-6 bg-gradient-to-r from-gray-50 to-white border-b-2 border-gray-200">
-          <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <Users size={24} className="text-[var(--color-dark-teal)]" />
-            Admin Users ({users.length})
-          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <Users size={24} className="text-[var(--color-dark-teal)]" />
+              Admin Users ({users.length})
+            </h2>
+            {lastSyncedAt && (
+              <span className="text-xs font-medium text-gray-500">Last synced: {lastSyncedAt}</span>
+            )}
+          </div>
         </div>
 
         {error && (
@@ -83,7 +111,14 @@ export default function UsersManagement() {
             <AlertCircle size={24} className="text-red-600 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-bold text-red-800">{error}</p>
-              <p className="text-sm text-red-600 mt-1">Please try again or contact administrator</p>
+              <p className="text-sm text-red-600 mt-1">Please try again or contact administrator.</p>
+              <button
+                type="button"
+                onClick={() => void loadUsers(true)}
+                className="mt-3 inline-flex items-center gap-2 rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700"
+              >
+                <RefreshCw size={12} /> Retry
+              </button>
             </div>
           </div>
         )}
@@ -102,6 +137,7 @@ export default function UsersManagement() {
                 <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Email</th>
                 <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Role</th>
                 <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Created</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -139,6 +175,9 @@ export default function UsersManagement() {
                       {user.isActive ? "Active" : "Inactive"}
                     </span>
                   </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "-"}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -148,4 +187,3 @@ export default function UsersManagement() {
     </div>
   );
 }
-

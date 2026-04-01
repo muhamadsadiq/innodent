@@ -1,7 +1,6 @@
 // components/admin/AdminSidebar.tsx
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
 import {
   LayoutDashboard,
@@ -13,6 +12,7 @@ import {
   LogOut,
   User,
   Shield,
+  ChevronRight,
 } from "lucide-react";
 
 type Section = "products" | "categories" | "catalogs" | "activities" | "users" | "overview";
@@ -108,7 +108,7 @@ export default function AdminSidebar({
               </div>
               <span className="font-medium text-sm">{item.label}</span>
               {activeSection === item.id && (
-                <span className="ml-auto"><LogOut size={16} className="rotate-180" /></span>
+                <span className="ml-auto text-white/80"><ChevronRight size={16} /></span>
               )}
             </button>
           );
@@ -128,4 +128,3 @@ export default function AdminSidebar({
     </div>
   );
 }
-

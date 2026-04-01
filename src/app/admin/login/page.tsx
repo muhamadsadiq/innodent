@@ -34,10 +34,6 @@ export default function AdminLoginPage() {
         return;
       }
 
-      // Store token in localStorage
-      localStorage.setItem("adminToken", data.token);
-      localStorage.setItem("adminRole", data.role);
-
       // Redirect to dashboard
       router.push("/admin/dashboard");
     } catch {
@@ -115,5 +111,3 @@ export default function AdminLoginPage() {
     </div>
   );
 }
-
-

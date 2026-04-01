@@ -5,6 +5,8 @@ import Image from "next/image";
 import ProductCard from "@/components/ProductCard";
 import { getRelatedProducts } from "@/lib/db";
 import { prisma } from "@/lib/prisma";
+import { buildProductJsonLd } from "@/lib/seo";
+import { siteConfig } from "@/config/site";
 
 // Allow dynamic rendering on Heroku where database may not be available at build time
 export const dynamic = "force-dynamic";
@@ -18,11 +20,39 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = await prisma.product.findUnique({
     where: { id: slug },
+    include: {
+      category: true,
+    },
   });
-  if (!product) return { title: "Product Not Found" };
+
+  if (!product) {
+    return {
+      title: "Product Not Found",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
+
   return {
     title: product.name,
     description: product.shortDescription,
+    alternates: {
+      canonical: `/products/${product.id}`,
+    },
+    openGraph: {
+      title: `${product.name} | ${siteConfig.name}`,
+      description: product.shortDescription,
+      url: `/products/${product.id}`,
+      images: [product.image || siteConfig.ogImage],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${product.name} | ${siteConfig.name}`,
+      description: product.shortDescription,
+      images: [product.image || siteConfig.ogImage],
+    },
   };
 }
 
@@ -50,7 +80,7 @@ export default async function ProductDetailPage({ params }: Props) {
       const parsed = JSON.parse(product.features);
       features = Array.isArray(parsed) ? parsed : [];
     }
-  } catch (e) {
+  } catch {
     features = [];
   }
 
@@ -59,15 +89,28 @@ export default async function ProductDetailPage({ params }: Props) {
       const parsed = JSON.parse(product.shades);
       shades = Array.isArray(parsed) ? parsed : [];
     }
-  } catch (e) {
+  } catch {
     shades = [];
   }
 
   const componentLabel = product.component?.trim() ? product.component : "Not applicable";
   const shadesLabel = shades.length > 0 ? shades.join(", ") : "Not applicable";
 
+  const productJsonLd = buildProductJsonLd({
+    id: product.id,
+    name: product.name,
+    description: product.shortDescription,
+    image: product.image,
+    category: product.category?.name || product.catalog?.name,
+    brand: siteConfig.name,
+  });
+
   return (
     <div className="min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
       {/* Breadcrumb */}
       <div className="px-4 pt-6 sm:px-6 sm:pt-8 md:pt-10 lg:px-8 lg:pt-12 2xl:pt-[40px]">
         <div className="mx-auto max-w-full 2xl:max-w-[1800px]">
@@ -155,7 +198,7 @@ export default async function ProductDetailPage({ params }: Props) {
               <div className="mx-auto max-w-full 2xl:max-w-7xl">
                 <h2 className="mb-4 sm:mb-6 md:mb-8 2xl:mb-8 text-xl sm:text-2xl md:text-3xl 2xl:text-2xl font-bold">Technical Specifications</h2>
                 <div className="grid gap-3 sm:gap-4 md:gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {Object.entries(specs).map(([key, value]: [string, any]) => (
+                  {Object.entries(specs as Record<string, unknown>).map(([key, value]) => (
                     <div
                       key={key}
                       className="rounded-xl border border-[var(--color-dark-teal-tint)] bg-[var(--color-charcoal)]/20 p-3 sm:p-4 md:p-5"
@@ -163,7 +206,7 @@ export default async function ProductDetailPage({ params }: Props) {
                       <p className="text-xs font-semibold uppercase tracking-widest text-[var(--color-teal)]">
                         {key}
                       </p>
-                      <p className="mt-1 font-medium text-xs sm:text-sm md:text-base 2xl:text-sm text-[var(--color-pale-blue)]">{value}</p>
+                      <p className="mt-1 font-medium text-xs sm:text-sm md:text-base 2xl:text-sm text-[var(--color-pale-blue)]">{String(value)}</p>
                     </div>
                   ))}
                 </div>

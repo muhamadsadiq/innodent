@@ -11,11 +11,13 @@ datasource db {
 }
 
 model Catalog {
-  id        String    @id @default(cuid())
-  name      String    @unique
-  products  Product[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id                 String    @id @default(cuid())
+  name               String    @unique
+  brochureUrl        String?
+  isProductClickable Boolean   @default(true)
+  products           Product[]
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 }
 
 model Category {

@@ -1,6 +1,22 @@
-"use client";
-
+import type { Metadata } from "next";
 import Image from "next/image";
+import { siteConfig } from "@/config/site";
+
+export const metadata: Metadata = {
+  title: "Contact",
+  description:
+    "Contact InnoDent for distributor partnerships, technical details, and product support.",
+  alternates: {
+    canonical: "/contact",
+  },
+  openGraph: {
+    title: `Contact | ${siteConfig.name}`,
+    description:
+      "Contact InnoDent for distributor partnerships, technical details, and product support.",
+    url: "/contact",
+    images: [siteConfig.ogImage],
+  },
+};
 
 export default function ContactPage() {
   return (
@@ -21,7 +37,7 @@ export default function ContactPage() {
         <hr className="m-auto mt-5 w-full max-w-[1200px] border-t-0 border-b-2 border-[var(--color-light-gray)] sm:mt-6 md:mt-7 2xl:mt-[31px]" />
 
         <p className="mx-auto mt-4 max-w-[1579px] text-base font-normal leading-7 sm:mt-5 sm:text-lg sm:leading-8 md:text-xl md:leading-9 lg:text-2xl lg:leading-10 2xl:mt-5 2xl:text-3xl 2xl:leading-10">
-          At Innodent, we believe that precision in our instruments should be matched by the precision of our support. Whether you are a distributor looking for a partnership or a dental professional seeking technical specifications, our specialized team is ready to assist you. We prioritize clear communication to ensure your facility operates at the highest standard of excellence.
+          Connect with innodent for premium dental solutions and global partnership opportunities. Our expert team is ready to provide detailed product specifications and business support tailored to your needs. Let’s work together to drive excellence in modern dentistry.
         </p>
       </div>
 

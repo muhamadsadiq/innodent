@@ -1,19 +1,32 @@
 // app/api/admin/products/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import jwt from "jsonwebtoken";
+import { requireAdminSession } from "@/lib/admin-security";
+import { buildCreateChanges, getRequestMetadata, pickFields } from "@/lib/activity-log";
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
-
-function verifyToken(token: string) {
-  try {
-    return jwt.verify(token, JWT_SECRET) as any;
-  } catch {
-    return null;
-  }
-}
+const PRODUCT_AUDIT_FIELDS = [
+  "name",
+  "shortDescription",
+  "description",
+  "image",
+  "catalogId",
+  "categoryId",
+  "isBestSeller",
+  "isNew",
+  "component",
+  "shades",
+  "features",
+  "specs",
+  "gallery",
+  "brochureUrl",
+];
 
 export async function GET(request: NextRequest) {
+  const auth = requireAdminSession(request, ["ADMIN", "SUPER_ADMIN"]);
+  if ("error" in auth) {
+    return auth.error;
+  }
+
   try {
     const products = await prisma.product.findMany({
       include: {
@@ -23,7 +36,7 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json(products);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to fetch products" },
       { status: 500 }
@@ -32,25 +45,14 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = requireAdminSession(request, ["ADMIN", "SUPER_ADMIN"]);
+  if ("error" in auth) {
+    return auth.error;
+  }
+
   try {
-    const authHeader = request.headers.get("authorization");
-    const token = authHeader?.replace("Bearer ", "");
-
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-    }
-
-    // Only ADMIN and SUPER_ADMIN can create products
-    if (decoded.role !== "ADMIN" && decoded.role !== "SUPER_ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
     const data = await request.json();
+    const requestMeta = getRequestMetadata(request);
 
     const product = await prisma.product.create({
       data: {
@@ -71,14 +73,18 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Log activity
+    const changes = buildCreateChanges(pickFields(product as unknown as Record<string, unknown>, PRODUCT_AUDIT_FIELDS), PRODUCT_AUDIT_FIELDS);
+
     await prisma.activityLog.create({
       data: {
-        userId: decoded.userId,
+        userId: auth.session.userId,
         action: "CREATE_PRODUCT",
         entityType: "Product",
         entityId: product.id,
         entityName: product.name,
+        changes: JSON.stringify(changes),
+        ipAddress: requestMeta.ipAddress,
+        userAgent: requestMeta.userAgent,
       },
     });
 
@@ -91,4 +97,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

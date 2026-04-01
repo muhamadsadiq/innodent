@@ -1,14 +1,20 @@
 export const siteConfig = {
   name: "InnoDent AI",
-  description: "AI-Powered Dental Solutions",
+  description:
+    "Professional dental products and equipment catalogs from InnoDent, including restorative materials, endodontics, and orthodontics solutions.",
   url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
-  ogImage: "/og-image.jpg",
+  ogImage: "/hero-popup.png",
   links: {
     twitter: "https://twitter.com/innodent",
     github: "https://github.com/innodent",
   },
   creator: "InnoDent AI Team",
+  keywords: [
+    "dental products",
+    "dental equipment",
+    "restorative materials",
+    "endodontics",
+    "orthodontics",
+    "InnoDent",
+  ],
 } as const;
-
-export type SiteConfig = typeof siteConfig;
-

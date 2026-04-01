@@ -12,6 +12,18 @@ interface Category {
   titleColor?: string;
 }
 
+const DEFAULT_CATEGORY_FORM = {
+  name: "",
+  bgColor: "var(--color-deep-blue)",
+  borderColor: "var(--color-sky-tint)",
+  borderHoverColor: "var(--color-deep-blue)",
+  titleColor: "var(--color-blue)",
+  titleBgColor: "var(--color-sky-blue)",
+  chipBorderColor: "var(--color-deep-blue)",
+  chipTextColor: "var(--color-sky-blue)",
+  imageBorderColor: "var(--color-muted-teal)",
+};
+
 const PREDEFINED_COLORS = {
   "var(--color-white)": "#ffffff",
   "var(--color-dark-teal)": "#1c9c9e",
@@ -69,94 +81,65 @@ function ColorPicker({ label, value, onChange }: ColorPickerProps) {
     return PREDEFINED_COLORS[value as keyof typeof PREDEFINED_COLORS] || "#000000";
   };
 
+  const currentColor = useCustom
+    ? customColor
+    : PREDEFINED_COLORS[value as keyof typeof PREDEFINED_COLORS] || value;
+
   return (
-    <div className="border-2 border-gray-200 rounded-lg p-4 bg-white hover:shadow-md transition-shadow">
-      <div className="flex items-center gap-3 mb-3">
-        <div
-          className="w-6 h-6 rounded-lg border-2 border-gray-300 shadow-sm flex-shrink-0"
-          style={{
-            backgroundColor: useCustom ? customColor : PREDEFINED_COLORS[value as keyof typeof PREDEFINED_COLORS] || value,
-          }}
-        ></div>
-        <label className="text-sm font-bold text-gray-800">{label}</label>
+    <div className="rounded-lg border border-gray-200 bg-white p-3 transition-shadow hover:shadow-sm">
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <label className="text-xs font-bold uppercase tracking-wider text-gray-700">{label}</label>
+        <div className="flex items-center gap-2">
+          <span className="rounded-full border border-gray-300 px-2 py-0.5 text-[10px] font-semibold text-gray-600">
+            {useCustom ? "Custom" : "Preset"}
+          </span>
+          <div className="h-5 w-5 rounded-md border border-gray-300" style={{ backgroundColor: currentColor }} />
+        </div>
       </div>
 
-      <div className="space-y-2">
-        {/* Predefined Colors Dropdown */}
+      <div className="grid grid-cols-[1fr_auto] gap-2">
         <select
           value={useCustom ? "" : value}
           onChange={handlePredefinedChange}
-          className="w-full border-2 border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-[var(--color-dark-teal)] focus:ring-2 focus:ring-[var(--color-sky-tint)] focus:outline-none transition-all bg-white"
+          className="w-full rounded-lg border border-gray-300 bg-white px-2 py-2 text-xs focus:border-[var(--color-dark-teal)] focus:outline-none"
         >
-          <option value="">-- Select a color --</option>
+          <option value="">Preset colors</option>
           {Object.entries(PREDEFINED_COLORS).map(([varName, hexValue]) => (
             <option key={varName} value={varName}>
-              {varName.replace("var(--color-", "").replace(")", "")} - {hexValue}
+              {varName.replace("var(--color-", "").replace(")", "")} ({hexValue})
             </option>
           ))}
         </select>
 
-        {/* OR Divider */}
-        <div className="flex items-center gap-2">
-          <div className="flex-1 h-px bg-gray-200"></div>
-          <span className="text-xs font-semibold text-gray-500 px-2">OR</span>
-          <div className="flex-1 h-px bg-gray-200"></div>
-        </div>
-
-        {/* Custom Color Input */}
-        <div className="flex gap-2">
-          <input
-            type="color"
-            value={getHexValue()}
-            onChange={(e) => {
-              setCustomColor(e.target.value);
-              onChange(e.target.value);
-              setUseCustom(true);
-            }}
-            className="w-12 h-10 border-2 border-gray-300 rounded-lg cursor-pointer hover:shadow-md transition-shadow flex-shrink-0"
-          />
-          <input
-            type="text"
-            value={getDisplayValue()}
-            onChange={handleCustomChange}
-            placeholder="e.g., #ff0000 or rgba(255,0,0,0.5)"
-            className="flex-1 border-2 border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:border-[var(--color-dark-teal)] focus:ring-2 focus:ring-[var(--color-sky-tint)] focus:outline-none transition-all"
-          />
-        </div>
-      </div>
-
-      {/* Color Preview */}
-      <div className="mt-3 pt-3 border-t border-gray-200">
-        <div
-          className="w-full h-12 rounded-lg border-2 border-gray-300 shadow-sm transition-all"
-          style={{
-            backgroundColor: useCustom ? customColor : PREDEFINED_COLORS[value as keyof typeof PREDEFINED_COLORS] || value,
+        <input
+          type="color"
+          value={getHexValue()}
+          onChange={(e) => {
+            setCustomColor(e.target.value);
+            onChange(e.target.value);
+            setUseCustom(true);
           }}
-        ></div>
-        <p className="text-xs text-gray-500 mt-2 text-center font-mono">
-          {useCustom ? customColor : value}
-        </p>
+          className="h-[34px] w-12 cursor-pointer rounded-md border border-gray-300"
+        />
       </div>
+
+      <input
+        type="text"
+        value={getDisplayValue()}
+        onChange={handleCustomChange}
+        placeholder="Custom value (#hex or rgba)"
+        className="mt-2 w-full rounded-lg border border-gray-300 px-2 py-2 text-xs font-mono focus:border-[var(--color-dark-teal)] focus:outline-none"
+      />
     </div>
   );
 }
 
-export default function CategoriesManagement({ userRole }: { userRole: string | null }) {
+export default function CategoriesManagement({ userRole: _userRole }: { userRole: string | null }) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    bgColor: "var(--color-deep-blue)",
-    borderColor: "var(--color-sky-tint)",
-    borderHoverColor: "var(--color-deep-blue)",
-    titleColor: "var(--color-blue)",
-    titleBgColor: "var(--color-sky-blue)",
-    chipBorderColor: "var(--color-deep-blue)",
-    chipTextColor: "var(--color-sky-blue)",
-    imageBorderColor: "var(--color-muted-teal)",
-  });
+  const [formData, setFormData] = useState(DEFAULT_CATEGORY_FORM);
 
   useEffect(() => {
     loadCategories();
@@ -189,7 +172,6 @@ export default function CategoriesManagement({ userRole }: { userRole: string | 
         method,
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("adminToken")}`,
         },
         body: JSON.stringify(formData),
       });
@@ -202,17 +184,7 @@ export default function CategoriesManagement({ userRole }: { userRole: string | 
       await loadCategories();
       setShowForm(false);
       setEditingId(null);
-      setFormData({
-        name: "",
-        bgColor: "var(--color-deep-blue)",
-        borderColor: "var(--color-sky-tint)",
-        borderHoverColor: "var(--color-deep-blue)",
-        titleColor: "var(--color-blue)",
-        titleBgColor: "var(--color-sky-blue)",
-        chipBorderColor: "var(--color-deep-blue)",
-        chipTextColor: "var(--color-sky-blue)",
-        imageBorderColor: "var(--color-muted-teal)",
-      });
+      setFormData(DEFAULT_CATEGORY_FORM);
     } catch (error) {
       console.error("Error saving category:", error);
       alert("Error saving category");
@@ -243,9 +215,6 @@ export default function CategoriesManagement({ userRole }: { userRole: string | 
     try {
       const response = await fetch(`/api/admin/categories/${categoryId}`, {
         method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem("adminToken")}`,
-        },
       });
 
       if (!response.ok) {
@@ -262,7 +231,7 @@ export default function CategoriesManagement({ userRole }: { userRole: string | 
 
   if (loading && !showForm) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-[260px]">
         <div className="text-center">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-dark-teal)] border-t-transparent"></div>
           <p className="mt-4 text-[var(--color-gray)]">Loading categories...</p>
@@ -304,88 +273,112 @@ export default function CategoriesManagement({ userRole }: { userRole: string | 
             {editingId ? "Edit Category" : "Add New Category"}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Category Name *</label>
-              <input
-                type="text"
-                placeholder="e.g., Restorative Materials"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
-                className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-base focus:border-[var(--color-dark-teal)] focus:ring-2 focus:ring-[var(--color-sky-tint)] focus:outline-none transition-all"
-              />
-            </div>
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-[360px_1fr]">
+              <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-4">
+                <div>
+                  <label className="mb-2 block text-sm font-bold text-gray-700">Category Name *</label>
+                  <input
+                    type="text"
+                    placeholder="e.g., Restorative Materials"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    required
+                    className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 text-sm focus:border-[var(--color-dark-teal)] focus:ring-2 focus:ring-[var(--color-sky-tint)] focus:outline-none"
+                  />
+                </div>
 
-            <div className="border-t-2 border-gray-200 pt-6">
-              <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <Palette size={24} className="text-[var(--color-dark-teal)]" />
-                Color Palette
-              </h3>
-              <div className="space-y-5">
-                <ColorPicker
-                  label="Background Color"
-                  value={formData.bgColor}
-                  onChange={(value) => setFormData({ ...formData, bgColor: value })}
-                />
-                <ColorPicker
-                  label="Border Color"
-                  value={formData.borderColor}
-                  onChange={(value) => setFormData({ ...formData, borderColor: value })}
-                />
-                <ColorPicker
-                  label="Border Hover Color"
-                  value={formData.borderHoverColor}
-                  onChange={(value) => setFormData({ ...formData, borderHoverColor: value })}
-                />
-                <ColorPicker
-                  label="Title Color"
-                  value={formData.titleColor}
-                  onChange={(value) => setFormData({ ...formData, titleColor: value })}
-                />
-                <ColorPicker
-                  label="Title Background Color"
-                  value={formData.titleBgColor}
-                  onChange={(value) => setFormData({ ...formData, titleBgColor: value })}
-                />
-                <ColorPicker
-                  label="Chip Border Color"
-                  value={formData.chipBorderColor}
-                  onChange={(value) => setFormData({ ...formData, chipBorderColor: value })}
-                />
-                <ColorPicker
-                  label="Chip Text Color"
-                  value={formData.chipTextColor}
-                  onChange={(value) => setFormData({ ...formData, chipTextColor: value })}
-                />
-                <ColorPicker
-                  label="Image Border Color"
-                  value={formData.imageBorderColor}
-                  onChange={(value) => setFormData({ ...formData, imageBorderColor: value })}
-                />
+                <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+                  <p className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-700">Live preview</p>
+                  <div className="rounded-xl border-2 p-3" style={{ borderColor: formData.borderColor, backgroundColor: formData.bgColor }}>
+                    <div className="mb-3 inline-flex rounded-full border px-3 py-1 text-xs font-semibold" style={{ borderColor: formData.chipBorderColor, color: formData.chipTextColor }}>
+                      {formData.name || "Category"}
+                    </div>
+                    <p className="text-sm font-bold" style={{ color: formData.titleColor }}>
+                      Sample Product Title
+                    </p>
+                    <div className="mt-3 h-14 w-full rounded-lg border" style={{ borderColor: formData.imageBorderColor, backgroundColor: formData.titleBgColor }} />
+                  </div>
+                </div>
               </div>
-            </div>
+
+              <div className="rounded-xl border border-gray-200 bg-white p-4">
+                <h3 className="mb-4 flex items-center gap-2 text-base font-bold text-gray-800">
+                  <Palette size={18} className="text-[var(--color-dark-teal)]" />
+                  Color Palette
+                </h3>
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                 <ColorPicker
+                   label="Background Color"
+                   value={formData.bgColor}
+                   onChange={(value) => setFormData({ ...formData, bgColor: value })}
+                 />
+                 <ColorPicker
+                   label="Border Color"
+                   value={formData.borderColor}
+                   onChange={(value) => setFormData({ ...formData, borderColor: value })}
+                 />
+                 <ColorPicker
+                   label="Border Hover Color"
+                   value={formData.borderHoverColor}
+                   onChange={(value) => setFormData({ ...formData, borderHoverColor: value })}
+                 />
+                 <ColorPicker
+                   label="Title Color"
+                   value={formData.titleColor}
+                   onChange={(value) => setFormData({ ...formData, titleColor: value })}
+                 />
+                 <ColorPicker
+                   label="Title Background Color"
+                   value={formData.titleBgColor}
+                   onChange={(value) => setFormData({ ...formData, titleBgColor: value })}
+                 />
+                 <ColorPicker
+                   label="Chip Border Color"
+                   value={formData.chipBorderColor}
+                   onChange={(value) => setFormData({ ...formData, chipBorderColor: value })}
+                 />
+                 <ColorPicker
+                   label="Chip Text Color"
+                   value={formData.chipTextColor}
+                   onChange={(value) => setFormData({ ...formData, chipTextColor: value })}
+                 />
+                 <ColorPicker
+                   label="Image Border Color"
+                   value={formData.imageBorderColor}
+                   onChange={(value) => setFormData({ ...formData, imageBorderColor: value })}
+                 />
+                </div>
+               </div>
+             </div>
 
             <div className="flex gap-3 pt-4">
               <button
-                type="submit"
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-[var(--color-moss-green)] to-[var(--color-dark-teal)] text-white font-bold rounded-lg hover:shadow-lg transition-all transform hover:scale-105"
-              >
-                {editingId ? "Update Category" : "Create Category"}
-              </button>
-              <button
                 type="button"
-                onClick={() => {
-                  setShowForm(false);
-                  setEditingId(null);
-                }}
-                className="px-6 py-3 bg-gray-200 text-gray-800 font-bold rounded-lg hover:bg-gray-300 transition-all"
+                onClick={() => setFormData((prev) => ({ ...DEFAULT_CATEGORY_FORM, name: prev.name }))}
+                className="px-6 py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-100 transition-all"
               >
-                Cancel
+                Reset Colors
               </button>
-            </div>
-          </form>
-        </div>
-      )}
+               <button
+                 type="submit"
+                 className="flex-1 px-6 py-3 bg-gradient-to-r from-[var(--color-moss-green)] to-[var(--color-dark-teal)] text-white font-bold rounded-lg hover:shadow-lg transition-all transform hover:scale-105"
+               >
+                 {editingId ? "Update Category" : "Create Category"}
+               </button>
+               <button
+                 type="button"
+                 onClick={() => {
+                   setShowForm(false);
+                   setEditingId(null);
+                 }}
+                 className="px-6 py-3 bg-gray-200 text-gray-800 font-bold rounded-lg hover:bg-gray-300 transition-all"
+               >
+                 Cancel
+               </button>
+             </div>
+           </form>
+         </div>
+       )}
 
       {/* Categories Table */}
       <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 overflow-hidden">
@@ -396,8 +389,9 @@ export default function CategoriesManagement({ userRole }: { userRole: string | 
           </h2>
         </div>
 
-        <table className="w-full">
-          <thead className="bg-gradient-to-r from-gray-100 to-gray-50 border-b-2 border-gray-200">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[920px]">
+           <thead className="bg-gradient-to-r from-gray-100 to-gray-50 border-b-2 border-gray-200">
             <tr>
               <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Category Name</th>
               <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Color Palette</th>
@@ -478,8 +472,8 @@ export default function CategoriesManagement({ userRole }: { userRole: string | 
             )}
           </tbody>
         </table>
-      </div>
-    </div>
-  );
-}
-
+        </div>
+       </div>
+     </div>
+   );
+ }

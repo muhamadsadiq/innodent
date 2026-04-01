@@ -1,9 +1,7 @@
 // app/api/admin/auth/login/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateUser } from "@/lib/auth";
-import jwt from "jsonwebtoken";
-
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
+import { parseAdminRole, setAdminSessionCookie, signAdminToken } from "@/lib/admin-security";
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,23 +30,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create JWT token
-    const token = jwt.sign(
-      {
-        userId: user.id,
-        email: user.email,
-        role: user.role,
-      },
-      JWT_SECRET,
-      { expiresIn: "24h" }
-    );
+    const role = parseAdminRole(user.role);
+    if (!role) {
+      return NextResponse.json(
+        { error: "User role is invalid" },
+        { status: 403 }
+      );
+    }
 
-    return NextResponse.json({
-      token,
-      role: user.role,
+    const token = signAdminToken({
+      userId: user.id,
+      email: user.email,
+      role,
+      name: user.name,
+    });
+
+    const response = NextResponse.json({
+      role,
       name: user.name,
       email: user.email,
     });
+
+    setAdminSessionCookie(response, token);
+    return response;
   } catch (error) {
     console.error("Login error:", error);
     return NextResponse.json(
@@ -57,4 +61,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

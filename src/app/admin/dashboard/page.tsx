@@ -31,30 +31,33 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check authentication
-    const token = localStorage.getItem("adminToken");
-    const role = localStorage.getItem("adminRole");
-    const name = localStorage.getItem("adminName");
+    const bootstrapSession = async () => {
+      try {
+        const response = await fetch("/api/admin/auth/session");
+        if (!response.ok) {
+          router.push("/admin/login");
+          return;
+        }
 
-    if (!token) {
-      router.push("/admin/login");
-      return;
-    }
+        const session = await response.json();
+        setUserRole(session.role ?? null);
+        setUserName(session.name ?? null);
+      } catch {
+        router.push("/admin/login");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // Set state only if values exist
-    if (role && name) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setUserRole(role);
-      setUserName(name);
-    }
-    setLoading(false);
+    void bootstrapSession();
   }, [router]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("adminToken");
-    localStorage.removeItem("adminRole");
-    localStorage.removeItem("adminName");
-    router.push("/admin/login");
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/admin/auth/logout", { method: "POST" });
+    } finally {
+      router.push("/admin/login");
+    }
   };
 
   if (loading) {
@@ -93,9 +96,9 @@ export default function AdminDashboard() {
               onNavigate={handleNavigate}
             />
           )}
-          {activeSection === "products" && <ProductsManagement userRole={userRole} />}
+          {activeSection === "products" && <ProductsManagement />}
           {activeSection === "categories" && <CategoriesManagement userRole={userRole} />}
-          {activeSection === "catalogs" && <CatalogsManagement userRole={userRole} />}
+          {activeSection === "catalogs" && <CatalogsManagement />}
           {activeSection === "activities" && isSuperAdmin && <ActivityLogs />}
           {activeSection === "users" && isSuperAdmin && <UsersManagement />}
         </div>
@@ -313,5 +316,3 @@ function QuickActionItem({
     </button>
   );
 }
-
-

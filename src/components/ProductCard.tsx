@@ -13,6 +13,8 @@ interface ProductCardProps {
   borderColor?: string;
   borderHoverColor?: string;
   compact?: boolean;
+  clickable?: boolean;
+  disableHoverEffects?: boolean;
 }
 
 export default function ProductCard({
@@ -24,22 +26,24 @@ export default function ProductCard({
   borderColor,
   borderHoverColor,
   compact = false,
+  clickable = true,
+  disableHoverEffects = false,
 }: ProductCardProps) {
   const cardSizeClass = compact
     ? "max-w-full sm:max-w-[620px] md:max-w-[680px] lg:max-w-[720px] xl:max-w-[790px] 2xl:max-w-[825.928px] h-[240px] sm:h-[270px] md:h-[300px] lg:h-[340px] xl:h-[380px] 2xl:h-[414.247px]"
     : "max-w-full sm:max-w-[420px] md:max-w-[460px] lg:max-w-[500px] xl:max-w-[540px] 2xl:max-w-[547.687px] h-[240px] sm:h-[270px] md:h-[300px] lg:h-[340px] xl:h-[380px] 2xl:h-[414.247px]";
 
-  return (
-    <Link
-      href={`/products/${id}`}
-      className={`group mx-auto flex w-full ${cardSizeClass} flex-col overflow-hidden rounded-[18px] transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(2,31,33,0.18)] sm:rounded-[22px] md:rounded-[26px] lg:rounded-[30px] 2xl:rounded-[40px]`}
-      style={{
-        backgroundColor: bgColor,
-      }}
-    >
+  const hoverClass = !disableHoverEffects
+    ? "hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(2,31,33,0.18)]"
+    : "";
+
+  const cardContent = (
+    <>
       {/* ── Image area ── */}
       <div
-        className="relative min-h-0 flex-1 overflow-hidden group-hover:border-[var(--card-hover-border-color)] border-[var(--card-border-color)] rounded-[18px] border-[3px] bg-white sm:rounded-[22px] md:rounded-[26px] lg:rounded-[30px] 2xl:rounded-[40px]"
+        className={`relative min-h-0 flex-1 overflow-hidden border-[var(--card-border-color)] rounded-[18px] border-[3px] bg-white sm:rounded-[22px] md:rounded-[26px] lg:rounded-[30px] 2xl:rounded-[40px] ${
+          disableHoverEffects ? "" : "group-hover:border-[var(--card-hover-border-color)]"
+        }`}
         style={{
           ["--card-hover-border-color" as string]: borderHoverColor,
           ["--card-border-color" as string]: borderColor,
@@ -80,6 +84,27 @@ export default function ProductCard({
           {name}
         </h3>
       </div>
+    </>
+  );
+
+  if (!clickable) {
+    return (
+      <div
+        className={`group mx-auto flex w-full ${cardSizeClass} flex-col overflow-hidden rounded-[18px] transition-[transform,box-shadow] duration-300 ease-out ${hoverClass} cursor-default sm:rounded-[22px] md:rounded-[26px] lg:rounded-[30px] 2xl:rounded-[40px]`}
+        style={{ backgroundColor: bgColor }}
+      >
+        {cardContent}
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      href={`/products/${id}`}
+      className={`group mx-auto flex w-full ${cardSizeClass} flex-col overflow-hidden rounded-[18px] transition-[transform,box-shadow] duration-300 ease-out ${hoverClass} cursor-pointer sm:rounded-[22px] md:rounded-[26px] lg:rounded-[30px] 2xl:rounded-[40px]`}
+      style={{ backgroundColor: bgColor }}
+    >
+      {cardContent}
     </Link>
   );
 }

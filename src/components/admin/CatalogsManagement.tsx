@@ -32,6 +32,21 @@ function formatBytes(bytes: number) {
   return `${(bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 1)} ${sizes[i]}`;
 }
 
+function isValidBrochureUrl(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return true;
+
+  // Accept local uploaded paths and absolute URLs.
+  if (trimmed.startsWith("/")) return true;
+
+  try {
+    const parsed = new URL(trimmed);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 export default function CatalogsManagement() {
   const [catalogs, setCatalogs] = useState<Catalog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -84,6 +99,12 @@ export default function CatalogsManagement() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    if (!isValidBrochureUrl(formData.brochureUrl)) {
+      setError("Please enter a valid brochure link or keep the uploaded file path.");
+      setLoading(false);
+      return;
+    }
 
     try {
       const url = editingId
@@ -292,7 +313,8 @@ export default function CatalogsManagement() {
               <div className="relative">
                 <LinkIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
-                  type="url"
+                  type="text"
+                  inputMode="url"
                   placeholder="https://drive.google.com/... or /uploads/catalogs/file.pdf"
                   value={formData.brochureUrl}
                   onChange={(e) => {

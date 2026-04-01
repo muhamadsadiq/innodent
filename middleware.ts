@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminToken } from '@/lib/admin-security';
 
 const PUBLIC_ADMIN_PATHS = new Set([
   '/admin/login',
@@ -20,10 +19,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Keep middleware lightweight for edge runtime: only check cookie existence.
+  // Full JWT validation is enforced in API routes via requireAdminSession().
   const token = request.cookies.get('admin_session')?.value;
-  const session = token ? verifyAdminToken(token) : null;
 
-  if (!session) {
+  if (!token) {
     if (isAdminApi) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

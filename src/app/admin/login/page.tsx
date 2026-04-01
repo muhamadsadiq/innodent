@@ -48,7 +48,7 @@ export default function AdminLoginPage() {
         <div className="mb-8 text-center">
           <div className="mb-4 flex justify-center">
             <Image
-              src="/innodent-logo.svg"
+              src="/logo-hero.png"
               alt="InnoDent"
               width={150}
               height={40}
@@ -101,12 +101,6 @@ export default function AdminLoginPage() {
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
-
-        <p className="mt-4 text-center text-sm text-[var(--color-gray)]">
-          Demo credentials:<br />
-          Super Admin: superadmin@innodent.com / password123<br />
-          Admin: admin@innodent.com / password123
-        </p>
       </div>
     </div>
   );

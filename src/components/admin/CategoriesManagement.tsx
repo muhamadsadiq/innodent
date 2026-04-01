@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Edit2, Trash2, Palette, AlertCircle, CheckCircle } from "lucide-react";
+import { Plus, Edit2, Trash2, Palette, AlertCircle } from "lucide-react";
 
 interface Category {
   id: string;

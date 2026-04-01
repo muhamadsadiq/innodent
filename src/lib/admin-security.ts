@@ -74,11 +74,9 @@ function shouldUseSecureCookie(request?: NextRequest): boolean {
   }
 
   const publicUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
-  if (publicUrl.startsWith("http://localhost") || publicUrl.startsWith("http://127.0.0.1")) {
-    return false;
-  }
+  return !(publicUrl.startsWith("http://localhost") || publicUrl.startsWith("http://127.0.0.1"));
 
-  return true;
+
 }
 
 export function setAdminSessionCookie(response: NextResponse, token: string, request?: NextRequest) {

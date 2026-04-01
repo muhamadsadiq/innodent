@@ -202,7 +202,6 @@ export default function ProductsCatalog({
     const useBestPalette = Boolean(options?.useBestPalette);
     const palette = useBestPalette ? bestProductsPalette : getProductPalette(p, categoryColors);
     const clickable = isProductClickable(p);
-    const hoverClass = clickable ? "transition-all hover:-translate-y-0.5" : "";
     const imageHoverClass = clickable ? "group-hover:border-[var(--border-hover-color)]" : "";
 
     const cardBody = (
@@ -309,14 +308,14 @@ export default function ProductsCatalog({
 
     if (clickable) {
       return (
-        <Link key={p.id} href={`/products/${p.slug}`} className={`group rounded-[40px] flex gap-6 ${hoverClass}`}>
+        <Link key={p.id} href={`/products/${p.slug}`} className={`group rounded-[40px] flex gap-6`}>
           {cardBody}
         </Link>
       );
     }
 
     return (
-      <div key={p.id} className={`group rounded-[40px] flex gap-6 ${hoverClass}`}>
+      <div key={p.id} className={`group rounded-[40px] flex gap-6`}>
         {cardBody}
       </div>
     );
@@ -408,7 +407,7 @@ export default function ProductsCatalog({
                   </h2>
                   <div className={"bg-[var(--color-white-tint)] px-[54px] py-[52px] rounded-[64px]"}>
                     {namedEntries.map(([categoryName, categoryProducts]) => (
-                      <div key={`list-${catalogName}-${categoryName}`} className="space-y-4">
+                      <div key={`list-${catalogName}-${categoryName}`} className="space-y-4 [&>*]:pb-6 last:[&>*]:pb-0">
                         <div className="flex flex-col gap-6">{categoryProducts.map((p) => renderListCard(p))}</div>
                       </div>
                     ))}

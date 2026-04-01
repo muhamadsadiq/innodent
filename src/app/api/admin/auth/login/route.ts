@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       email: user.email,
     });
 
-    setAdminSessionCookie(response, token);
+    setAdminSessionCookie(response, token, request);
     return response;
   } catch (error) {
     console.error("Login error:", error);

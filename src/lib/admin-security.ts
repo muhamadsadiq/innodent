@@ -54,20 +54,47 @@ export function verifyAdminToken(token: string): AdminTokenPayload | null {
   }
 }
 
-export function setAdminSessionCookie(response: NextResponse, token: string) {
+function shouldUseSecureCookie(request?: NextRequest): boolean {
+  const forced = process.env.ADMIN_COOKIE_SECURE;
+  if (forced === "true") return true;
+  if (forced === "false") return false;
+
+  if (process.env.NODE_ENV !== "production") {
+    return false;
+  }
+
+  const forwardedProto = request?.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  if (forwardedProto) {
+    return forwardedProto === "https";
+  }
+
+  const protocol = request?.nextUrl?.protocol?.replace(":", "");
+  if (protocol) {
+    return protocol === "https";
+  }
+
+  const publicUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
+  if (publicUrl.startsWith("http://localhost") || publicUrl.startsWith("http://127.0.0.1")) {
+    return false;
+  }
+
+  return true;
+}
+
+export function setAdminSessionCookie(response: NextResponse, token: string, request?: NextRequest) {
   response.cookies.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: shouldUseSecureCookie(request),
     sameSite: "lax",
     path: "/",
     maxAge: SESSION_TTL_SECONDS,
   });
 }
 
-export function clearAdminSessionCookie(response: NextResponse) {
+export function clearAdminSessionCookie(response: NextResponse, request?: NextRequest) {
   response.cookies.set(SESSION_COOKIE_NAME, "", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: shouldUseSecureCookie(request),
     sameSite: "lax",
     path: "/",
     maxAge: 0,

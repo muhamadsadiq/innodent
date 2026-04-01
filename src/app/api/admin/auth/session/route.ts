@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   const auth = requireAdminSession(request, ["ADMIN", "SUPER_ADMIN"]);
   if ("error" in auth) {
     const response = auth.error;
-    clearAdminSessionCookie(response);
+    clearAdminSessionCookie(response, request);
     return response;
   }
 
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 
   if (!user || !user.isActive) {
     const response = NextResponse.json({ error: "Session expired" }, { status: 401 });
-    clearAdminSessionCookie(response);
+    clearAdminSessionCookie(response, request);
     return response;
   }
 
@@ -37,4 +37,3 @@ export async function GET(request: NextRequest) {
     role: user.role,
   });
 }
-

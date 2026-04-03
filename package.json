@@ -17,7 +17,8 @@
     "db:migrate:dev": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "admin:create-super": "node scripts/create-super-admin.mjs"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

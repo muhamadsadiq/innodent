@@ -9,6 +9,8 @@ const MIME_EXTENSION_MAP: Record<string, string> = {
   "image/svg+xml": ".svg",
 };
 
+const MANAGED_UPLOAD_PREFIX = "/uploads/";
+
 export function slugifyProductName(name: string) {
   const base = name
     .toLowerCase()
@@ -34,17 +36,49 @@ export function buildUploadFilename(input: {
   return `${slug}-${randomNumber}${extension}`;
 }
 
+export function getUploadsRootDir() {
+  const configured = process.env.UPLOADS_DIR?.trim();
+
+  if (!configured) {
+    return path.join(process.cwd(), "public", "uploads");
+  }
+
+  return path.isAbsolute(configured)
+    ? path.normalize(configured)
+    : path.join(process.cwd(), configured);
+}
+
 export function isManagedUploadPath(fileUrl: string | null | undefined) {
-  return typeof fileUrl === "string" && fileUrl.startsWith("/uploads/");
+  return typeof fileUrl === "string" && fileUrl.startsWith(MANAGED_UPLOAD_PREFIX);
+}
+
+function getManagedUploadRelativePath(fileUrl: string) {
+  if (!isManagedUploadPath(fileUrl)) return null;
+
+  const rawPath = fileUrl.slice(MANAGED_UPLOAD_PREFIX.length).trim();
+  if (!rawPath) return null;
+
+  const segments = rawPath.split("/");
+  if (
+    segments.some(
+      (segment) =>
+        !segment ||
+        segment === "." ||
+        segment === ".." ||
+        !/^[a-zA-Z0-9._-]+$/.test(segment),
+    )
+  ) {
+    return null;
+  }
+
+  return segments.join("/");
 }
 
 export function resolveManagedUploadPath(fileUrl: string) {
-  if (!isManagedUploadPath(fileUrl)) return null;
+  const relativePath = getManagedUploadRelativePath(fileUrl);
+  if (!relativePath) return null;
 
-  const filename = fileUrl.replace("/uploads/", "").trim();
-  if (!filename || filename.includes("..") || filename.includes("/")) return null;
-
-  return path.join(process.cwd(), "public", "uploads", filename);
+  return path.join(getUploadsRootDir(), relativePath);
 }
 
 export async function deleteManagedUploadFile(fileUrl: string | null | undefined) {
@@ -58,4 +92,3 @@ export async function deleteManagedUploadFile(fileUrl: string | null | undefined
     // Ignore if file already removed or unavailable.
   }
 }
-

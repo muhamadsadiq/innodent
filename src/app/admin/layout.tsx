@@ -6,7 +6,7 @@ export const metadata: Metadata = {
     default: "Admin Dashboard",
     template: `%s | ${siteConfig.name} - Admin`,
   },
-  description: "InnoDent AI Admin Dashboard",
+  description: "InnoDent Admin Dashboard",
   robots: {
     index: false,
     follow: false,
@@ -20,4 +20,3 @@ export default function AdminLayout({
 }>) {
   return children;
 }
-

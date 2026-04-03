@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import {
   buildUploadFilename,
   deleteManagedUploadFile,
+  getUploadsRootDir,
   isManagedUploadPath,
 } from "@/lib/upload-utils";
 
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
     }
 
     const buffer = Buffer.from(arrayBuffer);
-    const uploadsDir = path.join(process.cwd(), "public", "uploads");
+    const uploadsDir = getUploadsRootDir();
     await mkdir(uploadsDir, { recursive: true });
 
     const safeFilename = buildUploadFilename({

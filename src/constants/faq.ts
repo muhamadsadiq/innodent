@@ -20,4 +20,3 @@ export const faqItems: FAQItem[] = [
       "We are always looking for dedicated partners to expand our global network. If you are interested in becoming a regional dealer, please send us your company profile and target market information. Our export team will review your application and get back to you within 2-3 business days.",
   },
 ];
-

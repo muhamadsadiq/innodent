@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "Initializing database client..."
+echo "Initializing Prisma client..."
 npm run db:generate
 
-echo "Syncing database schema..."
-npm run db:push
+echo "Applying database migrations..."
+npm run db:migrate:deploy
 
 if [[ "${SEED_ON_BOOT:-false}" == "true" ]]; then
-  echo "Seeding database..."
+  echo "SEED_ON_BOOT=true -> seeding database..."
   npm run db:seed
 fi
 
 echo "Starting application..."
-npm run start
+exec npm run start

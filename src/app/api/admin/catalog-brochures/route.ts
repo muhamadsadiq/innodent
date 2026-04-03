@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { mkdir, unlink, writeFile } from "fs/promises";
+import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { requireAdminSession } from "@/lib/admin-security";
+import { prisma } from "@/lib/prisma";
+import {
+  deleteManagedUploadFile,
+  getUploadsRootDir,
+  isManagedUploadPath,
+} from "@/lib/upload-utils";
 
 const MAX_FILE_SIZE_BYTES = 15 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = new Set(["application/pdf"]);
@@ -22,22 +28,21 @@ function isManagedBrochurePath(url: string) {
   return url.startsWith("/uploads/catalogs/");
 }
 
-function resolveBrochurePath(url: string) {
-  if (!isManagedBrochurePath(url)) return null;
-  const filename = url.replace("/uploads/catalogs/", "");
-  if (!filename || filename.includes("..") || filename.includes("/")) return null;
-  return path.join(process.cwd(), "public", "uploads", "catalogs", filename);
-}
+async function tryDeleteUnreferencedBrochure(url: string | null | undefined, excludeCatalogId?: string) {
+  if (!url || !isManagedBrochurePath(url) || !isManagedUploadPath(url)) return;
 
-async function deleteManagedBrochure(url: string | null | undefined) {
-  if (!url) return;
-  const filePath = resolveBrochurePath(url);
-  if (!filePath) return;
+  const [catalogReferences, productReferences] = await Promise.all([
+    prisma.catalog.count({
+      where: {
+        brochureUrl: url,
+        ...(excludeCatalogId ? { id: { not: excludeCatalogId } } : {}),
+      },
+    }),
+    prisma.product.count({ where: { brochureUrl: url } }),
+  ]);
 
-  try {
-    await unlink(filePath);
-  } catch {
-    // Ignore missing file.
+  if (catalogReferences === 0 && productReferences === 0) {
+    await deleteManagedUploadFile(url);
   }
 }
 
@@ -66,7 +71,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "PDF exceeds 15MB limit" }, { status: 413 });
     }
 
-    const uploadsDir = path.join(process.cwd(), "public", "uploads", "catalogs");
+    const uploadsDir = path.join(getUploadsRootDir(), "catalogs");
     await mkdir(uploadsDir, { recursive: true });
 
     const randomSuffix = crypto.randomInt(100000, 999999);
@@ -77,7 +82,7 @@ export async function POST(request: NextRequest) {
 
     const publicUrl = `/uploads/catalogs/${filename}`;
     if (previousBrochure && previousBrochure !== publicUrl) {
-      await deleteManagedBrochure(previousBrochure);
+      await tryDeleteUnreferencedBrochure(previousBrochure);
     }
 
     return NextResponse.json({ url: publicUrl });
@@ -97,7 +102,7 @@ export async function DELETE(request: NextRequest) {
     const body = await request.json();
     const url = typeof body?.url === "string" ? body.url : "";
     if (url) {
-      await deleteManagedBrochure(url);
+      await tryDeleteUnreferencedBrochure(url);
     }
 
     return NextResponse.json({ success: true });
@@ -105,4 +110,3 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Failed to delete brochure" }, { status: 500 });
   }
 }
-

@@ -1,0 +1,27 @@
+[Unit]
+Description=InnoDent Next.js App
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/innodent-ai
+Environment=NODE_ENV=production
+EnvironmentFile=/var/www/innodent-ai/.env.production
+ExecStart=/usr/bin/bash /var/www/innodent-ai/start.sh
+Restart=always
+RestartSec=5
+KillSignal=SIGINT
+TimeoutStopSec=30
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/www/innodent-ai /var/www/uploads
+
+[Install]
+WantedBy=multi-user.target
+

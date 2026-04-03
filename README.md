@@ -47,7 +47,7 @@ cp .env.example .env.local
 
 ### 3. Initialize Database
 ```bash
-npm run db:push
+npm run db:migrate:deploy
 npm run db:generate
 npm run db:seed
 ```
@@ -68,7 +68,8 @@ This project includes comprehensive documentation:
 1. **SETUP_CHECKLIST.md** - Step-by-step setup and implementation tasks
 2. **DEVELOPMENT_GUIDE.md** - Development standards, patterns, and workflows
 3. **DEPLOYMENT_GUIDE.md** - Production deployment instructions
-4. **README.md** - This file (project overview)
+4. **VPS_DEPLOYMENT.md** - Ubuntu VPS + Nginx + systemd deployment runbook
+5. **README.md** - This file (project overview)
 
 ---
 
@@ -89,6 +90,8 @@ npm run format           # Format with Prettier
 # Database
 npm run db:push          # Push schema changes to DB
 npm run db:generate      # Generate Prisma client
+npm run db:migrate:dev   # Create/apply migration in development
+npm run db:migrate:deploy # Apply committed migrations (production-safe)
 npm run db:seed          # Seed initial data
 npm run db:studio        # Open Prisma Studio GUI (http://localhost:5555)
 ```
@@ -144,7 +147,7 @@ Includes:
 
 ⚠️ **Important for Production:**
 - Change `JWT_SECRET` to a strong random string (> 32 characters)
-- Use PostgreSQL or MySQL for production (not SQLite)
+- SQLite is supported in production for a single VPS (`DATABASE_URL=file:/var/www/innodent-ai/prisma/prod.db`)
 - Never commit `.env` files
 - Enable HTTPS
 - Review security checklist in DEPLOYMENT_GUIDE.md
@@ -196,4 +199,3 @@ Includes:
 
 **Project Created**: March 29, 2026  
 **Status**: ✅ Foundation Complete - Ready for Development
-

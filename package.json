@@ -1,5 +1,5 @@
 {
-  "name": "innodent-ai",
+  "name": "innodent",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -7,12 +7,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "start:prod": "bash start.sh",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio"
   },
@@ -23,7 +26,7 @@
     "dotenv": "^17.3.1",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.7.0",
-    "next": "16.1.6",
+    "next": "16.1.7",
     "prisma": "^5.22.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -46,5 +49,9 @@
     "prettier-plugin-tailwindcss": "^0.7.2",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2"
+  },
+  "engines": {
+    "node": ">=20 <25",
+    "npm": ">=10"
   }
 }

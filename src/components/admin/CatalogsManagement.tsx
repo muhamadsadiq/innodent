@@ -23,7 +23,7 @@ interface Catalog {
   isProductClickable?: boolean;
 }
 
-const MAX_PDF_SIZE = 15 * 1024 * 1024;
+const MAX_PDF_SIZE = 40 * 1024 * 1024;
 
 function formatBytes(bytes: number) {
   if (bytes === 0) return "0 B";
@@ -241,7 +241,7 @@ export default function CatalogsManagement() {
     }
 
     if (file.size > MAX_PDF_SIZE) {
-      setBrochureError("PDF size must be 15MB or less.");
+      setBrochureError("PDF size must be 40MB or less.");
       return;
     }
 

@@ -6,10 +6,10 @@ After=network.target
 Type=simple
 User=www-data
 Group=www-data
-WorkingDirectory=/var/www/innodent-ai
+WorkingDirectory=/var/www/innodent
 Environment=NODE_ENV=production
-EnvironmentFile=/var/www/innodent-ai/.env.production
-ExecStart=/usr/bin/bash /var/www/innodent-ai/start.sh
+EnvironmentFile=/var/www/innodent/.env.production
+ExecStart=/usr/bin/bash /var/www/innodent/start.sh
 Restart=always
 RestartSec=5
 KillSignal=SIGINT
@@ -20,7 +20,7 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=full
 ProtectHome=true
-ReadWritePaths=/var/www/innodent-ai /var/www/uploads
+ReadWritePaths=/var/www/innodent /var/www/uploads
 
 [Install]
 WantedBy=multi-user.target

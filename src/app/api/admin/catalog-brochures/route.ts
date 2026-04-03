@@ -10,7 +10,7 @@ import {
   isManagedUploadPath,
 } from "@/lib/upload-utils";
 
-const MAX_FILE_SIZE_BYTES = 15 * 1024 * 1024;
+const MAX_FILE_SIZE_BYTES = 40 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = new Set(["application/pdf"]);
 
 function slugify(value: string) {
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
 
     const arrayBuffer = await file.arrayBuffer();
     if (arrayBuffer.byteLength > MAX_FILE_SIZE_BYTES) {
-      return NextResponse.json({ error: "PDF exceeds 15MB limit" }, { status: 413 });
+      return NextResponse.json({ error: "PDF exceeds 40MB limit" }, { status: 413 });
     }
 
     const uploadsDir = path.join(getUploadsRootDir(), "catalogs");

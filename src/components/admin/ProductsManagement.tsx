@@ -33,6 +33,7 @@ type ProductRow = {
   catalogId: string;
   categoryId: string | null;
   image: string;
+  features?: string | null;
   component?: string | null;
   shades?: string | null;
   isBestSeller: boolean;
@@ -48,6 +49,51 @@ const ALLOWED_IMAGE_TYPES = new Set([
   "image/webp",
   "image/svg+xml",
 ]);
+
+const FEATURE_QUICK_SUGGESTIONS = [
+  "Excellent Flowability",
+  "Direct or Indirect Pulp Capping",
+  "Excellent radiopacity",
+  "Low polymerization shrinkage",
+  "Various shade",
+  "Easy to Adhere to Bracket for Orthodontics",
+];
+
+function parseStringArrayField(value: unknown): string[] {
+  if (!value) return [];
+
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => String(item).trim())
+      .filter((item) => item.length > 0);
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return [];
+
+    // Handle JSON array string first.
+    if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) {
+          return parsed
+            .map((item) => String(item).trim())
+            .filter((item) => item.length > 0);
+        }
+      } catch {
+        // Fall back to comma/newline parsing.
+      }
+    }
+
+    return trimmed
+      .split(/[,\n]/)
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
+  }
+
+  return [];
+}
 
 function formatBytes(bytes: number) {
   if (bytes === 0) return "0 B";
@@ -70,6 +116,8 @@ export default function ProductsManagement() {
   const [selectedImageName, setSelectedImageName] = useState<string>("");
   const [selectedImageSize, setSelectedImageSize] = useState<number>(0);
   const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
+  const [featureInput, setFeatureInput] = useState("");
+  const [featureError, setFeatureError] = useState<string | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -78,6 +126,7 @@ export default function ProductsManagement() {
     catalogId: "",
     categoryId: "",
     image: "",
+    features: [] as string[],
     component: "",
     shades: "",
     isBestSeller: false,
@@ -146,9 +195,20 @@ export default function ProductsManagement() {
         .map((shade) => shade.trim())
         .filter((shade) => shade.length > 0);
 
+      const cleanedFeatures = formData.features
+        .map((feature) => feature.trim())
+        .filter((feature) => feature.length > 0);
+
+      if (cleanedFeatures.length === 0) {
+        setFeatureError("Add at least one feature so product details look complete.");
+        setLoading(false);
+        return;
+      }
+
       const dataToSend = {
         ...formData,
-        shades: JSON.stringify(shadesArray),
+        features: cleanedFeatures,
+        shades: shadesArray,
       };
 
       const url = editingId
@@ -182,11 +242,14 @@ export default function ProductsManagement() {
           catalogId: "",
           categoryId: "",
           image: "",
+          features: [],
           component: "",
           shades: "",
           isBestSeller: false,
           isNew: false,
         });
+        setFeatureInput("");
+        setFeatureError(null);
         setKeepCatalogCategory(false);
         setImagePreview(null);
         setSelectedImageName("");
@@ -199,6 +262,7 @@ export default function ProductsManagement() {
           description: "",
           shortDescription: "",
           image: "",
+          features: [],
           component: "",
           shades: "",
           isBestSeller: false,
@@ -208,6 +272,8 @@ export default function ProductsManagement() {
         setImagePreview(null);
         setSelectedImageName("");
         setSelectedImageSize(0);
+        setFeatureInput("");
+        setFeatureError(null);
       } else {
         // If adding and "keep catalog/category" is disabled, close the form
         setShowForm(false);
@@ -218,6 +284,7 @@ export default function ProductsManagement() {
           catalogId: "",
           categoryId: "",
           image: "",
+          features: [],
           component: "",
           shades: "",
           isBestSeller: false,
@@ -226,6 +293,8 @@ export default function ProductsManagement() {
         setImagePreview(null);
         setSelectedImageName("");
         setSelectedImageSize(0);
+        setFeatureInput("");
+        setFeatureError(null);
       }
     } catch (error) {
       console.error("Error saving product:", error);
@@ -247,6 +316,8 @@ export default function ProductsManagement() {
       }
     }
 
+    const featuresArray = parseStringArrayField(product.features);
+
     setFormData({
       name: product.name,
       description: product.description,
@@ -254,16 +325,80 @@ export default function ProductsManagement() {
       catalogId: product.catalogId,
       categoryId: product.categoryId || "",
       image: product.image,
+      features: featuresArray,
       component: product.component || "",
       shades: shadesString,
       isBestSeller: product.isBestSeller,
       isNew: product.isNew,
     });
+    setFeatureInput("");
+    setFeatureError(null);
     setImagePreview(product.image || null);
     setSelectedImageName("");
     setSelectedImageSize(0);
     setEditingId(product.id);
     setShowForm(true);
+  };
+
+  const addFeature = (rawValue: string) => {
+    const value = rawValue.trim();
+    if (!value) return;
+
+    const exists = formData.features.some(
+      (feature) => feature.toLowerCase() === value.toLowerCase(),
+    );
+
+    if (exists) {
+      setFeatureError("This feature is already added.");
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      features: [...prev.features, value],
+    }));
+    setFeatureInput("");
+    setFeatureError(null);
+  };
+
+  const removeFeature = (featureToRemove: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      features: prev.features.filter((feature) => feature !== featureToRemove),
+    }));
+  };
+
+  const handleFeatureInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter" || event.key === ",") {
+      event.preventDefault();
+      addFeature(featureInput);
+    }
+  };
+
+  const applyBulkFeatures = () => {
+    const parsed = parseStringArrayField(featureInput);
+    if (parsed.length === 0) {
+      setFeatureError("Type feature text first (comma or new line separated).");
+      return;
+    }
+
+    const existingMap = new Map(
+      formData.features.map((feature) => [feature.toLowerCase(), feature]),
+    );
+
+    parsed.forEach((feature) => {
+      const key = feature.toLowerCase();
+      if (!existingMap.has(key)) {
+        existingMap.set(key, feature);
+      }
+    });
+
+    setFormData((prev) => ({
+      ...prev,
+      features: Array.from(existingMap.values()),
+    }));
+    setFeatureInput("");
+    setFeatureError(null);
   };
 
   const handleDelete = async (productId: string, productName: string) => {
@@ -458,6 +593,84 @@ export default function ProductsManagement() {
                 className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-[var(--color-dark-teal)] focus:ring-2 focus:ring-[var(--color-sky-tint)] focus:outline-none transition-all"
                 rows={3}
               />
+            </div>
+
+            <div className="rounded-xl border-2 border-gray-200 bg-white p-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <label className="block text-sm font-bold text-gray-700">Features *</label>
+                <span className="rounded-full bg-[var(--color-mist-white)] px-3 py-1 text-xs font-semibold text-[var(--color-dark-teal)]">
+                  {formData.features.length} added
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3 min-h-[52px]">
+                {formData.features.length === 0 ? (
+                  <span className="text-xs text-gray-500">No features yet. Add from input or quick suggestions.</span>
+                ) : (
+                  formData.features.map((feature) => (
+                    <span
+                      key={feature}
+                      className="inline-flex items-center gap-1 rounded-full border border-[var(--color-dark-teal)]/30 bg-white px-3 py-1 text-xs font-semibold text-gray-700"
+                    >
+                      {feature}
+                      <button
+                        type="button"
+                        onClick={() => removeFeature(feature)}
+                        className="rounded-full p-0.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
+                        aria-label={`Remove ${feature}`}
+                      >
+                        <XCircle size={12} />
+                      </button>
+                    </span>
+                  ))
+                )}
+              </div>
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                {FEATURE_QUICK_SUGGESTIONS.map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => addFeature(item)}
+                    className="rounded-full border border-gray-300 bg-white px-3 py-1 text-xs font-semibold text-gray-700 hover:border-[var(--color-dark-teal)] hover:text-[var(--color-dark-teal)]"
+                  >
+                    + {item}
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-3 grid gap-2 md:grid-cols-[1fr_auto_auto]">
+                <input
+                  type="text"
+                  value={featureInput}
+                  onChange={(e) => {
+                    setFeatureInput(e.target.value);
+                    if (featureError) setFeatureError(null);
+                  }}
+                  onKeyDown={handleFeatureInputKeyDown}
+                  placeholder="Type feature and press Enter (or paste comma/new line list)"
+                  className="w-full border-2 border-gray-300 rounded-lg px-4 py-2.5 focus:border-[var(--color-dark-teal)] focus:ring-2 focus:ring-[var(--color-sky-tint)] focus:outline-none transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => addFeature(featureInput)}
+                  className="rounded-lg bg-[var(--color-dark-teal)] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90"
+                >
+                  Add
+                </button>
+                <button
+                  type="button"
+                  onClick={applyBulkFeatures}
+                  className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-100"
+                >
+                  Add All
+                </button>
+              </div>
+
+              {featureError && (
+                <p className="mt-2 text-xs font-medium text-red-600">{featureError}</p>
+              )}
+              <p className="mt-2 text-xs text-gray-500">These features appear in the product details page.</p>
             </div>
 
             <div>
@@ -663,7 +876,7 @@ export default function ProductsManagement() {
             <div className="flex gap-3 pt-4 border-t-2 border-gray-200">
               <button
                 type="submit"
-                disabled={imageUploading}
+                disabled={imageUploading || formData.features.length === 0}
                 className="flex-1 px-6 py-3 bg-gradient-to-r from-[var(--color-moss-green)] to-[var(--color-dark-teal)] text-white font-bold rounded-lg hover:shadow-lg transition-all transform hover:scale-105"
               >
                 {imageUploading ? "Please wait..." : editingId ? "Update Product" : "Create Product"}

@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 
 interface HeroSlide {
-  id: number;
+  id: string | number;
   src: string;
   alt: string;
 }

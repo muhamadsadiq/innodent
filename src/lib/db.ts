@@ -1,5 +1,11 @@
 // lib/db.ts
 import { prisma } from "./prisma";
+import { Prisma } from "@prisma/client";
+
+function isMissingHeroSlideTableError(error: unknown) {
+  if (!(error instanceof Prisma.PrismaClientKnownRequestError)) return false;
+  return error.code === "P2021";
+}
 
 export async function getAllProducts() {
   return await prisma.product.findMany({
@@ -9,7 +15,6 @@ export async function getAllProducts() {
     },
   });
 }
-
 
 export async function getProductsByCatalog(catalogId: string) {
   return await prisma.product.findMany({
@@ -77,6 +82,33 @@ export async function getAllCategories() {
   });
 }
 
+export async function getActiveHeroSlides() {
+  try {
+    return await prisma.heroSlide.findMany({
+      where: { isActive: true },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    });
+  } catch (error) {
+    if (isMissingHeroSlideTableError(error)) {
+      return [];
+    }
+    throw error;
+  }
+}
+
+export async function getAllHeroSlides() {
+  try {
+    return await prisma.heroSlide.findMany({
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    });
+  } catch (error) {
+    if (isMissingHeroSlideTableError(error)) {
+      return [];
+    }
+    throw error;
+  }
+}
+
 export async function getRelatedProducts(
   productId: string,
   catalogId: string,
@@ -104,9 +136,9 @@ export async function getRelatedProducts(
     if (currentProduct.isBestSeller && p.isBestSeller) return true;
 
     // Match if both are new
-    if (currentProduct.isNew && p.isNew) return true;
+    return currentProduct.isNew && p.isNew;
 
-    return false;
+
   });
 
   // Return 3-6 related products

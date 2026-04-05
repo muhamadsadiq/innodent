@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminSession } from "@/lib/admin-security";
 import { buildCreateChanges, getRequestMetadata, pickFields } from "@/lib/activity-log";
+import { revalidatePublicContent } from "@/lib/revalidation";
 
 const CATEGORY_AUDIT_FIELDS = [
   "name",
@@ -76,6 +77,8 @@ export async function POST(request: NextRequest) {
         userAgent: requestMeta.userAgent,
       },
     });
+
+    revalidatePublicContent();
 
     return NextResponse.json(category, { status: 201 });
   } catch (error) {

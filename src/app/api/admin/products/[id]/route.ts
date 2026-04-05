@@ -8,6 +8,7 @@ import {
   getRequestMetadata,
   pickFields,
 } from "@/lib/activity-log";
+import { revalidatePublicContent } from "@/lib/revalidation";
 
 const PRODUCT_AUDIT_FIELDS = [
   "name",
@@ -107,6 +108,8 @@ export async function PUT(
       },
     });
 
+    revalidatePublicContent(product.id);
+
     return NextResponse.json(product);
   } catch (error) {
     console.error("Error updating product:", error);
@@ -160,6 +163,8 @@ export async function DELETE(
         userAgent: requestMeta.userAgent,
       },
     });
+
+    revalidatePublicContent(id);
 
     return NextResponse.json({ success: true });
   } catch (error) {

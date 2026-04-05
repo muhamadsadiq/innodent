@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
 import { requireAdminSession } from "@/lib/admin-security";
 import {
   buildDeleteChanges,
@@ -8,6 +7,7 @@ import {
   getRequestMetadata,
   pickFields,
 } from "@/lib/activity-log";
+import { revalidatePublicContent } from "@/lib/revalidation";
 
 const CATALOG_AUDIT_FIELDS = ["name", "shortName", "brochureUrl", "isProductClickable"];
 
@@ -66,7 +66,7 @@ export async function PUT(
       },
     });
 
-    revalidatePath("/products");
+    revalidatePublicContent();
 
     return NextResponse.json(catalog);
   } catch (error) {
@@ -116,7 +116,7 @@ export async function DELETE(
       },
     });
 
-    revalidatePath("/products");
+    revalidatePublicContent();
 
     return NextResponse.json({ success: true });
   } catch (error) {

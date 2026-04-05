@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { getAllProducts, getFeaturedProducts, getAllCategories } from "@/lib/db";
+import { getAllProducts, getFeaturedProducts, getAllCategories, getActiveHeroSlides } from "@/lib/db";
 import { faqItems } from "@/constants/faq";
 import ProductCard from "@/components/ProductCard";
 import ExploreButton from "@/components/ExploreButton";
@@ -10,6 +10,8 @@ import FAQAccordion from "@/components/FAQAccordion";
 import TypewriterText from "@/components/TypewriterText";
 import BackToTopButton from "@/components/BackToTopButton";
 import { siteConfig } from "@/config/site";
+
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Home",
@@ -28,11 +30,13 @@ export const metadata: Metadata = {
 };
 
 type DbProduct = Awaited<ReturnType<typeof getAllProducts>>[number];
+type DbHeroSlide = Awaited<ReturnType<typeof getActiveHeroSlides>>[number];
 
 export default async function HomePage() {
   const allProducts = await getAllProducts();
   const featuredProducts = await getFeaturedProducts();
   const allCategories = await getAllCategories();
+  const heroSlides = await getActiveHeroSlides();
 
   // Convert database products to component format
   const convertProduct = (p: DbProduct) => ({
@@ -77,11 +81,11 @@ export default async function HomePage() {
     }))
     .filter(cat => cat.products.length > 0); // Only categories with products
 
-  const highlightsSlides = [
-    { id: 1, src: "/slider-img.png", alt: "Innodent highlight 1" },
-    { id: 2, src: "/slider-img2.jpeg", alt: "Innodent highlight 2" },
-    { id: 3, src: "/slider-img3.jpeg", alt: "Innodent highlight 3" },
-  ];
+  const highlightsSlides = heroSlides.map((slide: DbHeroSlide) => ({
+    id: slide.id,
+    src: slide.imageUrl,
+    alt: slide.alt?.trim() || "Innodent highlight",
+  }));
 
   const getGridColsClass = (itemsCount: number) =>
     itemsCount === 2

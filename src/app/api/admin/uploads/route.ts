@@ -18,12 +18,29 @@ const ALLOWED_MIME_TYPES = new Set([
   "image/svg+xml",
 ]);
 
-async function tryDeleteUnreferencedUpload(imageUrl: string | null | undefined) {
+function resolveUploadSubdirectory(rawFolder: unknown) {
+  const folder = typeof rawFolder === "string" ? rawFolder.trim() : "";
+  return folder === "slider" ? "slider" : "";
+}
+
+async function countUploadReferences(imageUrl: string, excludeHeroSlideId?: string) {
+  const [productReferences, heroSlideReferences] = await Promise.all([
+    prisma.product.count({ where: { image: imageUrl } }),
+    prisma.heroSlide.count({
+      where: {
+        imageUrl,
+        ...(excludeHeroSlideId ? { id: { not: excludeHeroSlideId } } : {}),
+      },
+    }),
+  ]);
+
+  return productReferences + heroSlideReferences;
+}
+
+async function tryDeleteUnreferencedUpload(imageUrl: string | null | undefined, excludeHeroSlideId?: string) {
   if (!imageUrl || !isManagedUploadPath(imageUrl)) return;
 
-  const references = await prisma.product.count({
-    where: { image: imageUrl },
-  });
+  const references = await countUploadReferences(imageUrl, excludeHeroSlideId);
 
   if (references === 0) {
     await deleteManagedUploadFile(imageUrl);
@@ -41,6 +58,7 @@ export async function POST(request: NextRequest) {
     const file = formData.get("file");
     const productName = String(formData.get("productName") || "");
     const previousImage = String(formData.get("previousImage") || "");
+    const subdirectory = resolveUploadSubdirectory(formData.get("folder"));
 
     if (!(file instanceof File)) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
@@ -56,7 +74,9 @@ export async function POST(request: NextRequest) {
     }
 
     const buffer = Buffer.from(arrayBuffer);
-    const uploadsDir = getUploadsRootDir();
+    const uploadsDir = subdirectory
+      ? path.join(getUploadsRootDir(), subdirectory)
+      : getUploadsRootDir();
     await mkdir(uploadsDir, { recursive: true });
 
     const safeFilename = buildUploadFilename({
@@ -68,7 +88,9 @@ export async function POST(request: NextRequest) {
     const filePath = path.join(uploadsDir, safeFilename);
     await writeFile(filePath, buffer, { flag: "wx" });
 
-    const publicPath = `/uploads/${safeFilename}`;
+    const publicPath = subdirectory
+      ? `/uploads/${subdirectory}/${safeFilename}`
+      : `/uploads/${safeFilename}`;
 
     if (previousImage && previousImage !== publicPath && isManagedUploadPath(previousImage)) {
       await tryDeleteUnreferencedUpload(previousImage);
@@ -90,12 +112,14 @@ export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json();
     const imageUrl = typeof body?.url === "string" ? body.url : "";
+    const excludeHeroSlideId =
+      typeof body?.excludeHeroSlideId === "string" ? body.excludeHeroSlideId : undefined;
 
     if (!imageUrl || !isManagedUploadPath(imageUrl)) {
       return NextResponse.json({ success: true });
     }
 
-    await tryDeleteUnreferencedUpload(imageUrl);
+    await tryDeleteUnreferencedUpload(imageUrl, excludeHeroSlideId);
 
     return NextResponse.json({ success: true });
   } catch {

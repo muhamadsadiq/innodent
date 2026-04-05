@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdminSession } from "@/lib/admin-security";
 import { buildCreateChanges, getRequestMetadata, pickFields } from "@/lib/activity-log";
+import { revalidatePublicContent } from "@/lib/revalidation";
 
 const PRODUCT_AUDIT_FIELDS = [
   "name",
@@ -87,6 +88,8 @@ export async function POST(request: NextRequest) {
         userAgent: requestMeta.userAgent,
       },
     });
+
+    revalidatePublicContent(product.id);
 
     return NextResponse.json(product);
   } catch (error) {

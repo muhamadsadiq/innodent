@@ -13,15 +13,15 @@ import {
   Plus,
   Zap,
   Lightbulb,
+  Images,
 } from "lucide-react";
-import AdminSidebar from "@/components/admin/AdminSidebar";
+import AdminSidebar, { type Section } from "@/components/admin/AdminSidebar";
 import ProductsManagement from "@/components/admin/ProductsManagement";
 import CategoriesManagement from "@/components/admin/CategoriesManagement";
 import CatalogsManagement from "@/components/admin/CatalogsManagement";
 import ActivityLogs from "@/components/admin/ActivityLogs";
 import UsersManagement from "@/components/admin/UsersManagement";
-
-type Section = "products" | "categories" | "catalogs" | "activities" | "users" | "overview";
+import HeroSlidesManagement from "@/components/admin/HeroSlidesManagement";
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -99,6 +99,7 @@ export default function AdminDashboard() {
           {activeSection === "products" && <ProductsManagement />}
           {activeSection === "categories" && <CategoriesManagement userRole={userRole} />}
           {activeSection === "catalogs" && <CatalogsManagement />}
+          {activeSection === "heroSlides" && <HeroSlidesManagement />}
           {activeSection === "activities" && isSuperAdmin && <ActivityLogs />}
           {activeSection === "users" && isSuperAdmin && <UsersManagement />}
         </div>
@@ -164,6 +165,14 @@ function DashboardOverview({
             count="Management"
             onClick={() => onNavigate("catalogs")}
           />
+          <DashboardCard
+            title="Hero Slides"
+            description="Manage homepage slider images"
+            icon={<Images size={40} />}
+            color="from-cyan-500 to-cyan-600"
+            count="Homepage"
+            onClick={() => onNavigate("heroSlides")}
+          />
           {isSuperAdmin && (
             <>
               <DashboardCard
@@ -212,6 +221,12 @@ function DashboardOverview({
             description="Organize products into catalogs"
             onClick={() => onNavigate("catalogs")}
           />
+          <QuickActionItem
+            icon={<Images size={32} />}
+            title="Update Hero Slider"
+            description="Upload and reorder homepage highlight slides"
+            onClick={() => onNavigate("heroSlides")}
+          />
           {isSuperAdmin && (
             <>
               <QuickActionItem
@@ -250,7 +265,7 @@ function DashboardOverview({
           </li>
           <li className="flex items-start gap-3">
             <span className="text-purple-600 font-bold">•</span>
-            <span>Mark products as "Best Seller" and "New" to highlight important items</span>
+            <span>Mark products as Best Seller and New to highlight important items</span>
           </li>
           <li className="flex items-start gap-3">
             <span className="text-green-600 font-bold">•</span>

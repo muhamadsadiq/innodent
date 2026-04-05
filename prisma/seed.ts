@@ -55,55 +55,55 @@ async function main() {
 
   // Create categories with color palettes
   // const restorativeMaterials =
-    await prisma.category.upsert({
-    where: { name: "Restorative Materials" },
-    update: {},
-    create: {
-      name: "Restorative Materials",
-      bgColor: "var(--color-deep-blue)",
-      borderColor: "var(--color-sky-tint)",
-      borderHoverColor: "var(--color-deep-blue)",
-      titleColor: "var(--color-blue)",
-      titleBgColor: "var(--color-sky-blue)",
-      chipBorderColor: "var(--color-deep-blue)",
-      chipTextColor: "var(--color-sky-blue)",
-      imageBorderColor: "var(--color-muted-teal)",
-    },
-  });
-
-  // const endodontics =
-    await prisma.category.upsert({
-    where: { name: "Endodontics" },
-    update: {},
-    create: {
-      name: "Endodontics",
-      bgColor: "var(--color-moss-green)",
-      borderColor: "var(--color-muted-sage)",
-      borderHoverColor: "var(--color-moss-green)",
-      titleColor: "var(--color-sage)",
-      titleBgColor: "var(--color-sage)",
-      chipBorderColor: "var(--color-deep-sage)",
-      chipTextColor: "var(--color-sage)",
-      imageBorderColor: "var(--color-muted-sage)",
-    },
-  });
-
-  // const orthodontics =
-    await prisma.category.upsert({
-    where: { name: "Orthodontics" },
-    update: {},
-    create: {
-      name: "Orthodontics",
-      bgColor: "var(--color-deep-indigo)",
-      borderColor: "var(--color-muted-lavender)",
-      borderHoverColor: "var(--color-deep-indigo)",
-      titleColor: "var(--color-lavender)",
-      titleBgColor: "var(--color-lavender)",
-      chipBorderColor: "var(--color-deep-lavender)",
-      chipTextColor: "var(--color-lavender)",
-      imageBorderColor: "var(--color-muted-lavender)",
-    },
-  });
+  //   await prisma.category.upsert({
+  //   where: { name: "Restorative Materials" },
+  //   update: {},
+  //   create: {
+  //     name: "Restorative Materials",
+  //     bgColor: "var(--color-deep-blue)",
+  //     borderColor: "var(--color-sky-tint)",
+  //     borderHoverColor: "var(--color-deep-blue)",
+  //     titleColor: "var(--color-blue)",
+  //     titleBgColor: "var(--color-sky-blue)",
+  //     chipBorderColor: "var(--color-deep-blue)",
+  //     chipTextColor: "var(--color-sky-blue)",
+  //     imageBorderColor: "var(--color-muted-teal)",
+  //   },
+  // });
+  //
+  // // const endodontics =
+  //   await prisma.category.upsert({
+  //   where: { name: "Endodontics" },
+  //   update: {},
+  //   create: {
+  //     name: "Endodontics",
+  //     bgColor: "var(--color-moss-green)",
+  //     borderColor: "var(--color-muted-sage)",
+  //     borderHoverColor: "var(--color-moss-green)",
+  //     titleColor: "var(--color-sage)",
+  //     titleBgColor: "var(--color-sage)",
+  //     chipBorderColor: "var(--color-deep-sage)",
+  //     chipTextColor: "var(--color-sage)",
+  //     imageBorderColor: "var(--color-muted-sage)",
+  //   },
+  // });
+  //
+  // // const orthodontics =
+  //   await prisma.category.upsert({
+  //   where: { name: "Orthodontics" },
+  //   update: {},
+  //   create: {
+  //     name: "Orthodontics",
+  //     bgColor: "var(--color-deep-indigo)",
+  //     borderColor: "var(--color-muted-lavender)",
+  //     borderHoverColor: "var(--color-deep-indigo)",
+  //     titleColor: "var(--color-lavender)",
+  //     titleBgColor: "var(--color-lavender)",
+  //     chipBorderColor: "var(--color-deep-lavender)",
+  //     chipTextColor: "var(--color-lavender)",
+  //     imageBorderColor: "var(--color-muted-lavender)",
+  //   },
+  // });
   //
   // // Create products for Catalog 1: Restorative Materials
   // await prisma.product.create({
@@ -330,8 +330,41 @@ async function main() {
   //     image: "/product.png",
   //   },
   // });
-  //
-  // console.log("✅ Database seeded successfully!");
+
+  // Ensure default hero slides exist for homepage highlights.
+  const defaultHeroSlides = [
+    { imageUrl: "/slider-img.png", alt: "Innodent highlight 1", sortOrder: 0 },
+    { imageUrl: "/slider-img2.jpeg", alt: "Innodent highlight 2", sortOrder: 1 },
+    { imageUrl: "/slider-img3.jpeg", alt: "Innodent highlight 3", sortOrder: 2 },
+  ];
+
+  for (const slide of defaultHeroSlides) {
+    const existing = await prisma.heroSlide.findFirst({
+      where: { imageUrl: slide.imageUrl },
+    });
+
+    if (existing) {
+      await prisma.heroSlide.update({
+        where: { id: existing.id },
+        data: {
+          alt: existing.alt || slide.alt,
+          isActive: true,
+          sortOrder: slide.sortOrder,
+        },
+      });
+    } else {
+      await prisma.heroSlide.create({
+        data: {
+          imageUrl: slide.imageUrl,
+          alt: slide.alt,
+          sortOrder: slide.sortOrder,
+          isActive: true,
+        },
+      });
+    }
+  }
+
+  console.log("✅ Database seeded successfully (including default hero slides)");
 }
 
 main()

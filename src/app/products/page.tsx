@@ -5,6 +5,8 @@ import BackToTopButton from "@/components/BackToTopButton";
 import { getAllProducts, getAllCategories, getAllCatalogs } from "@/lib/db";
 import { siteConfig } from "@/config/site";
 
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: "Products",
   description:

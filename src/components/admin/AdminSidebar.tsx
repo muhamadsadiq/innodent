@@ -13,9 +13,17 @@ import {
   User,
   Shield,
   ChevronRight,
+  Images,
 } from "lucide-react";
 
-type Section = "products" | "categories" | "catalogs" | "activities" | "users" | "overview";
+export type Section =
+  | "products"
+  | "categories"
+  | "catalogs"
+  | "heroSlides"
+  | "activities"
+  | "users"
+  | "overview";
 
 interface AdminSidebarProps {
   activeSection: Section;
@@ -30,6 +38,7 @@ const MENU_ICONS: Record<Section, React.ReactNode> = {
   products: <Package size={20} />,
   categories: <Palette size={20} />,
   catalogs: <BookOpen size={20} />,
+  heroSlides: <Images size={20} />,
   activities: <Activity size={20} />,
   users: <Users size={20} />,
 };
@@ -48,6 +57,7 @@ export default function AdminSidebar({
     { id: "products", label: "Products" },
     { id: "categories", label: "Categories" },
     { id: "catalogs", label: "Catalogs" },
+    { id: "heroSlides", label: "Hero Slides" },
     { id: "activities", label: "Activity Logs", superAdminOnly: true },
     { id: "users", label: "Users", superAdminOnly: true },
   ];

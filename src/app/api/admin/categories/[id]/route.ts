@@ -7,6 +7,7 @@ import {
   getRequestMetadata,
   pickFields,
 } from "@/lib/activity-log";
+import { revalidatePublicContent } from "@/lib/revalidation";
 
 const CATEGORY_AUDIT_FIELDS = [
   "name",
@@ -73,6 +74,8 @@ export async function PUT(
       },
     });
 
+    revalidatePublicContent();
+
     return NextResponse.json(category);
   } catch (error) {
     console.error("Error updating category:", error);
@@ -122,6 +125,8 @@ export async function DELETE(
         userAgent: requestMeta.userAgent,
       },
     });
+
+    revalidatePublicContent();
 
     return NextResponse.json({ success: true });
   } catch (error) {

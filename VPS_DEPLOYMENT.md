@@ -69,6 +69,12 @@ npm run db:generate
 npm run db:migrate:deploy
 ```
 
+Create your first SUPER_ADMIN user:
+
+```bash
+SUPER_ADMIN_EMAIL=superadmin@innodent.com SUPER_ADMIN_PASSWORD='ChangeThisNow123!' SUPER_ADMIN_NAME='Super Admin' npm run admin:create-super
+```
+
 Optional one-time seed:
 
 ```bash

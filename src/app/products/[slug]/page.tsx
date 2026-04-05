@@ -8,8 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { buildProductJsonLd } from "@/lib/seo";
 import { siteConfig } from "@/config/site";
 
-// Allow dynamic rendering on Heroku where database may not be available at build time
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 interface Props {
   params: Promise<{ slug: string }>;

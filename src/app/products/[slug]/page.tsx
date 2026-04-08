@@ -132,6 +132,7 @@ export default async function ProductDetailPage({ params }: Props) {
               <Image
                 src={product.image}
                 alt={product.name}
+                unoptimized
                 width={1240}
                 height={723}
                 className="w-full h-full object-contain"

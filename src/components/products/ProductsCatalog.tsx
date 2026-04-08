@@ -223,10 +223,8 @@ export default function ProductsCatalog({
             src={p.image}
             alt={p.name}
             unoptimized
-            height={90}
-            width={37}
-            sizes={"(max-width: 640px) 100vw, (max-width: 1536px) 50vw, 547.687px"}
-            className="h-[315px] w-[540px] object-contain object-center"
+            fill
+            className="object-contain p-2 object-center"
           />
 
           {/* ── Featured star badge ── */}
@@ -296,11 +294,25 @@ export default function ProductsCatalog({
           </div>
 
           <p
-            className="max-w-[368px] mt-[23px] text-[24px] leading-6 ml-[10px] text-[var(--color-gray)]"
+            className="max-w-[368px] mt-[23px] ml-[10px] text-[24px] leading-6 text-[var(--color-gray)] [overflow-wrap:anywhere]"
+            style={{
+              display: "-webkit-box",
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
           >
             {p.shortDescription}
           </p>
-          <p className="mt-[32px] text-[24px] leading-6 ml-[10px] text-[var(--color-charcoal)]">
+          <p
+            className="mt-[32px] ml-[10px] text-[20px] leading-6 text-[var(--color-charcoal)] [overflow-wrap:anywhere]"
+            style={{
+              display: "-webkit-box",
+              WebkitLineClamp: 4,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
             {p.description}
           </p>
           {!clickable && (

@@ -8,7 +8,6 @@ import {
   pickFields,
 } from "@/lib/activity-log";
 import { deleteManagedUploadFile, isManagedUploadPath } from "@/lib/upload-utils";
-import { revalidatePublicContent } from "@/lib/revalidation";
 
 const HERO_SLIDE_AUDIT_FIELDS = ["imageUrl", "alt", "sortOrder", "isActive"];
 
@@ -105,8 +104,6 @@ export async function PUT(
       },
     });
 
-    revalidatePublicContent();
-
     return NextResponse.json(updatedSlide);
   } catch (error) {
     console.error("Error updating hero slide:", error);
@@ -163,8 +160,6 @@ export async function DELETE(
         userAgent: requestMeta.userAgent,
       },
     });
-
-    revalidatePublicContent();
 
     return NextResponse.json({ success: true });
   } catch (error) {

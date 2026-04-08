@@ -147,7 +147,6 @@ Includes:
 
 ⚠️ **Important for Production:**
 - Change `JWT_SECRET` to a strong random string (> 32 characters)
-- Set `REVALIDATE_SECRET` to protect the `/api/revalidate` endpoint
 - SQLite is supported in production for a single VPS (`DATABASE_URL=file:/var/www/innodent-ai/prisma/prod.db`)
 - Never commit `.env` files
 - Enable HTTPS

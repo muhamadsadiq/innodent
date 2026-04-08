@@ -128,7 +128,7 @@ export default async function ProductDetailPage({ params }: Props) {
           {/* Left — image placeholder */}
           <div className="flex flex-col">
             <h1 className="text-black text-2xl sm:text-3xl md:text-4xl lg:text-5xl 2xl:text-[40px] leading-tight font-semibold ml-0 sm:ml-2 md:ml-4 lg:ml-8 2xl:ml-20">{product.name}</h1>
-            <div className="mt-4 sm:mt-6 md:mt-8 lg:mt-10 2xl:mt-[30px] flex max-w-full 2xl:max-w-[1240px] items-center justify-center rounded-2xl sm:rounded-3xl md:rounded-4xl lg:rounded-[46px] border-2 sm:border-3 md:border-4 border-[var(--color-muted-teal)] min-h-[250px] sm:min-h-[300px] md:min-h-[360px] lg:min-h-[420px] 2xl:min-h-[420px] bg-white">
+            <div className="mt-4 sm:mt-6 md:mt-8 lg:mt-10 2xl:mt-[30px] flex max-w-full 2xl:max-w-[1240px] items-center justify-center rounded-2xl sm:rounded-3xl md:rounded-4xl lg:rounded-[46px] border-2 sm:border-3 md:border-4 border-[var(--color-muted-teal)] p-2 max-h-[300px] min-h-[250px] sm:min-h-[300px] md:min-h-[360px] lg:min-h-[420px] 2xl:min-h-[420px] bg-white">
               <Image
                 src={product.image}
                 alt={product.name}

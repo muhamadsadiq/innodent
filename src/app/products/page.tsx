@@ -107,8 +107,8 @@ export default async function ProductsPage() {
           <h2 className="font-bold uppercase leading-[40px] text-[20px] sm:text-[24px] md:text-[28px] lg:text-[32px] xl:text-[36px]">
             Explore Our Dental Solutions
           </h2>
-          <hr className="m-auto w-full mt-1 md:mt-[10px] lg:mt-[31px] max-w-[1200px] border-b-2 border-t-0 border-[var(--color-light-gray)]" />
-          <p className={"mx-auto mt-5 text-[12px] sm:text-[14px] md:text-[18px] lg:text-[22px] xl:text-[26px] font-normal xl:leading-10 max-w-[1579px]"}>Experience the full spectrum of innodent’s advanced clinical materials. From high-performance restorative composites to specialized endodontic and orthodontic solutions, our products are precision-engineered to ensure superior clinical outcomes and long-term durability. Browse our comprehensive portfolio to find the perfect materials for modern dental practice.</p>
+          <hr className="m-auto mt-1 md:mt-[10px] 2xl:max-w-[1200px] w-auto lg:mt-[31px] 2xl:mx-auto mx-10 border-b-2 border-t-0 border-[var(--color-light-gray)]" />
+          <p className={"mx-auto mt-5 text-[12px] sm:text-[14px] md:text-[18px] lg:text-[22px] xl:text-[26px] font-normal xl:leading-10 max-w-[1579px] px-10"}>Experience the full spectrum of innodent’s advanced clinical materials. From high-performance restorative composites to specialized endodontic and orthodontic solutions, our products are precision-engineered to ensure superior clinical outcomes and long-term durability. Browse our comprehensive portfolio to find the perfect materials for modern dental practice.</p>
         </div>
       </section>
 

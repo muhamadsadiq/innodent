@@ -123,12 +123,12 @@ export default async function ProductDetailPage({ params }: Props) {
       </div>
 
       {/* Main content */}
-      <section className="px-4 pt-2 sm:px-6 sm:pt-4 md:px-8 md:pt-6 lg:pt-8 2xl:pt-[15px]">
-        <div className="mx-auto max-w-full 2xl:max-w-none 2xl:mx-[120px] grid gap-6 sm:gap-8 md:gap-10 lg:grid-cols-[2fr_1fr]">
+      <section className="2xl:mx-[120px] px-4 pt-2 sm:px-6 sm:pt-4 md:px-8 md:pt-6 lg:pt-8 2xl:pt-[15px]">
+            <h1 className="text-black text-2xl sm:text-3xl md:text-3xl lg:text-4xl 2xl:text-[40px] leading-tight font-semibold ml-0 sm:ml-2 md:ml-4 lg:ml-8 2xl:ml-20">{product.name}</h1>
+        <div className="mt-4 sm:mt-6 md:mt-8 lg:mt-10 2xl:mt-[30px] mx-auto max-w-full 2xl:max-w-none grid gap-6 sm:gap-8 md:gap-10 lg:grid-cols-[2fr_1fr]">
           {/* Left — image placeholder */}
           <div className="flex flex-col">
-            <h1 className="text-black text-2xl sm:text-3xl md:text-4xl lg:text-5xl 2xl:text-[40px] leading-tight font-semibold ml-0 sm:ml-2 md:ml-4 lg:ml-8 2xl:ml-20">{product.name}</h1>
-            <div className="mt-4 sm:mt-6 md:mt-8 lg:mt-10 2xl:mt-[30px] flex max-w-full 2xl:max-w-[1240px] items-center justify-center rounded-2xl sm:rounded-3xl md:rounded-4xl lg:rounded-[46px] border-2 sm:border-3 md:border-4 border-[var(--color-muted-teal)] p-2 max-h-[300px] min-h-[250px] sm:min-h-[300px] md:min-h-[360px] lg:min-h-[420px] 2xl:min-h-[420px] bg-white">
+            <div className="flex max-w-full 2xl:max-w-[1240px] items-center justify-center rounded-2xl sm:rounded-3xl md:rounded-4xl lg:rounded-[46px] border-2 sm:border-3 md:border-4 border-[var(--color-muted-teal)] p-2 max-h-[300px] min-h-[250px] sm:min-h-[300px] md:min-h-[360px] lg:min-h-[420px] 2xl:min-h-[420px] bg-white">
               <Image
                 src={product.image}
                 alt={product.name}
@@ -138,7 +138,7 @@ export default async function ProductDetailPage({ params }: Props) {
                 className="w-full h-full object-contain"
               />
             </div>
-            <h2 className="text-[var(--color-gray)] text-base sm:text-lg md:text-xl lg:text-2xl 2xl:text-[24px] leading-snug mt-4 sm:mt-6 md:mt-8 2xl:mt-8 max-w-md">{product.shortDescription}</h2>
+            <h2 className="text-[var(--color-gray)] text-base sm:text-lg md:text-xl lg:text-2xl 2xl:text-[24px] leading-snug mt-4 sm:mt-6 md:mt-8 2xl:mt-8 max-w-5xl">{product.shortDescription}</h2>
             <h2 className="text-[var(--color-charcoal)] text-base sm:text-lg md:text-xl lg:text-2xl 2xl:text-[24px] leading-snug mt-3 sm:mt-4 md:mt-5 2xl:mt-5">{product.description}</h2>
             <h3 className="text-[var(--color-charcoal)] text-base sm:text-lg md:text-xl lg:text-2xl 2xl:text-[24px] font-bold mt-2 sm:mt-3 md:mt-4 2xl:mt-2 max-w-2xl">Features:</h3>
             {/* Features */}
@@ -152,7 +152,7 @@ export default async function ProductDetailPage({ params }: Props) {
           </div>
 
           {/* Right — info */}
-          <div className="flex flex-col mt-6 sm:mt-8 md:mt-10 lg:mt-12 2xl:mt-[70px]">
+          <div className="flex flex-col">
             <div className="flex flex-col items-start gap-2 sm:gap-2.5 md:gap-3 2xl:gap-3">
               <span className="rounded-full border border-[var(--color-deep-blue)] px-3 sm:px-4 md:px-6 lg:px-7 2xl:px-[28px] py-1 sm:py-1.5 md:py-2 2xl:py-[7px] text-xs sm:text-sm md:text-lg lg:text-xl 2xl:text-[22px] text-[var(--color-sky-blue)]">
                 {product.category?.name || product.catalog?.shortName || product.catalog?.name}

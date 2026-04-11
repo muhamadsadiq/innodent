@@ -224,7 +224,7 @@ export default function ProductsCatalog({
             alt={p.name}
             unoptimized
             fill
-            className="object-contain p-2 object-center"
+            className="object-contain p-4 object-center"
           />
 
           {/* ── Featured star badge ── */}

@@ -55,7 +55,7 @@ export default function ProductCard({
           fill
           unoptimized
           sizes={compact ? "(max-width: 640px) 100vw, (max-width: 1536px) 80vw, 825.928px" : "(max-width: 640px) 100vw, (max-width: 1536px) 50vw, 547.687px"}
-          className="h-full w-full object-contain object-center"
+          className="p-4 h-full w-full object-contain object-center"
         />
 
         {/* ── Featured star badge ── */}

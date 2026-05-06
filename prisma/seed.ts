@@ -60,6 +60,7 @@ async function main() {
   //   update: {},
   //   create: {
   //     name: "Restorative Materials",
+  //     subtitle: "Premium materials for beautiful, durable restorations.",
   //     bgColor: "var(--color-deep-blue)",
   //     borderColor: "var(--color-sky-tint)",
   //     borderHoverColor: "var(--color-deep-blue)",
@@ -77,6 +78,7 @@ async function main() {
   //   update: {},
   //   create: {
   //     name: "Endodontics",
+  //     subtitle: "Advanced solutions for precise root canal treatment.",
   //     bgColor: "var(--color-moss-green)",
   //     borderColor: "var(--color-muted-sage)",
   //     borderHoverColor: "var(--color-moss-green)",
@@ -94,6 +96,7 @@ async function main() {
   //   update: {},
   //   create: {
   //     name: "Orthodontics",
+  //     subtitle: "Innovative tools for effective orthodontic treatment.",
   //     bgColor: "var(--color-deep-indigo)",
   //     borderColor: "var(--color-muted-lavender)",
   //     borderHoverColor: "var(--color-deep-indigo)",

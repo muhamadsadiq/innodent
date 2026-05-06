@@ -24,6 +24,7 @@ model Catalog {
 model Category {
   id       String    @id @default(cuid())
   name     String    @unique
+  subtitle String?   // Dynamic subtitle text for each category
   products Product[]
 
   // Color palette for category styling

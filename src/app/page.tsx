@@ -67,6 +67,7 @@ export default async function HomePage() {
     .map(cat => ({
       id: cat.id,
       name: cat.name,
+      subtitle: cat.subtitle || "Discover the tools that power progressive dental care.",
       products: products.filter(p => p.category === cat.name).slice(0, 3),
       colors: {
         bgColor: cat.bgColor || "var(--color-deep-dark-teal)",
@@ -223,7 +224,7 @@ export default async function HomePage() {
             </div>
 
             <p className="mt-8 text-center text-[22px] font-light leading-tight text-[var(--color-gray)] sm:text-[28px] 2xl:mt-[30.72px] 2xl:text-[32px] 2xl:leading-[32px]">
-              Discover the tools that power progressive dental care.
+              {category.subtitle}
             </p>
 
             <ExploreButton chipBorderColor={category.colors.chipBorderColor} titleColor={category.colors.titleColor} />

@@ -6,6 +6,7 @@ import { revalidatePublicContent } from "@/lib/revalidation";
 
 const CATEGORY_AUDIT_FIELDS = [
   "name",
+  "subtitle",
   "bgColor",
   "borderColor",
   "borderHoverColor",
@@ -46,19 +47,20 @@ export async function POST(request: NextRequest) {
     const data = await request.json();
     const requestMeta = getRequestMetadata(request);
 
-    const category = await prisma.category.create({
-      data: {
-        name: data.name,
-        bgColor: data.bgColor,
-        borderColor: data.borderColor,
-        borderHoverColor: data.borderHoverColor,
-        titleColor: data.titleColor,
-        titleBgColor: data.titleBgColor,
-        chipBorderColor: data.chipBorderColor,
-        chipTextColor: data.chipTextColor,
-        imageBorderColor: data.imageBorderColor,
-      },
-    });
+     const category = await prisma.category.create({
+       data: {
+         name: data.name,
+         subtitle: data.subtitle,
+         bgColor: data.bgColor,
+         borderColor: data.borderColor,
+         borderHoverColor: data.borderHoverColor,
+         titleColor: data.titleColor,
+         titleBgColor: data.titleBgColor,
+         chipBorderColor: data.chipBorderColor,
+         chipTextColor: data.chipTextColor,
+         imageBorderColor: data.imageBorderColor,
+       },
+     });
 
     await prisma.activityLog.create({
       data: {

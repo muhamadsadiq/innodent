@@ -11,6 +11,7 @@ import { revalidatePublicContent } from "@/lib/revalidation";
 
 const CATEGORY_AUDIT_FIELDS = [
   "name",
+  "subtitle",
   "bgColor",
   "borderColor",
   "borderHoverColor",
@@ -40,20 +41,21 @@ export async function PUT(
       return NextResponse.json({ error: "Category not found" }, { status: 404 });
     }
 
-    const category = await prisma.category.update({
-      where: { id },
-      data: {
-        name: data.name,
-        bgColor: data.bgColor,
-        borderColor: data.borderColor,
-        borderHoverColor: data.borderHoverColor,
-        titleColor: data.titleColor,
-        titleBgColor: data.titleBgColor,
-        chipBorderColor: data.chipBorderColor,
-        chipTextColor: data.chipTextColor,
-        imageBorderColor: data.imageBorderColor,
-      },
-    });
+     const category = await prisma.category.update({
+       where: { id },
+       data: {
+         name: data.name,
+         subtitle: data.subtitle,
+         bgColor: data.bgColor,
+         borderColor: data.borderColor,
+         borderHoverColor: data.borderHoverColor,
+         titleColor: data.titleColor,
+         titleBgColor: data.titleBgColor,
+         chipBorderColor: data.chipBorderColor,
+         chipTextColor: data.chipTextColor,
+         imageBorderColor: data.imageBorderColor,
+       },
+     });
 
     const changes = buildUpdateChanges(
       pickFields(existingCategory as unknown as Record<string, unknown>, CATEGORY_AUDIT_FIELDS),

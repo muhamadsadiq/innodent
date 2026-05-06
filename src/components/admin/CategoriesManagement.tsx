@@ -7,6 +7,7 @@ import { Plus, Edit2, Trash2, Palette, AlertCircle } from "lucide-react";
 interface Category {
   id: string;
   name: string;
+  subtitle?: string;
   bgColor?: string;
   borderColor?: string;
   titleColor?: string;
@@ -14,6 +15,7 @@ interface Category {
 
 const DEFAULT_CATEGORY_FORM = {
   name: "",
+  subtitle: "",
   bgColor: "var(--color-deep-blue)",
   borderColor: "var(--color-sky-tint)",
   borderHoverColor: "var(--color-deep-blue)",
@@ -193,21 +195,22 @@ export default function CategoriesManagement({ userRole: _userRole }: { userRole
     }
   };
 
-  const handleEdit = (category: Category) => {
-    setFormData({
-      name: category.name,
-      bgColor: category.bgColor || "var(--color-deep-blue)",
-      borderColor: category.borderColor || "var(--color-sky-tint)",
-      borderHoverColor: "var(--color-deep-blue)",
-      titleColor: category.titleColor || "var(--color-blue)",
-      titleBgColor: "var(--color-sky-blue)",
-      chipBorderColor: "var(--color-deep-blue)",
-      chipTextColor: "var(--color-sky-blue)",
-      imageBorderColor: "var(--color-muted-teal)",
-    });
-    setEditingId(category.id);
-    setShowForm(true);
-  };
+   const handleEdit = (category: Category) => {
+     setFormData({
+       name: category.name,
+       subtitle: category.subtitle || "",
+       bgColor: category.bgColor || "var(--color-deep-blue)",
+       borderColor: category.borderColor || "var(--color-sky-tint)",
+       borderHoverColor: "var(--color-deep-blue)",
+       titleColor: category.titleColor || "var(--color-blue)",
+       titleBgColor: "var(--color-sky-blue)",
+       chipBorderColor: "var(--color-deep-blue)",
+       chipTextColor: "var(--color-sky-blue)",
+       imageBorderColor: "var(--color-muted-teal)",
+     });
+     setEditingId(category.id);
+     setShowForm(true);
+   };
 
   const handleDelete = async (categoryId: string, categoryName: string) => {
     if (!confirm(`Are you sure you want to delete "${categoryName}"?`)) return;
@@ -285,6 +288,18 @@ export default function CategoriesManagement({ userRole: _userRole }: { userRole
                     required
                     className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 text-sm focus:border-[var(--color-dark-teal)] focus:ring-2 focus:ring-[var(--color-sky-tint)] focus:outline-none"
                   />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-bold text-gray-700">Category Subtitle</label>
+                  <textarea
+                    placeholder="e.g., Premium materials for beautiful, durable restorations."
+                    value={formData.subtitle}
+                    onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
+                    rows={3}
+                    className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 text-sm focus:border-[var(--color-dark-teal)] focus:ring-2 focus:ring-[var(--color-sky-tint)] focus:outline-none resize-none"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">This subtitle will be displayed on the homepage under the category section</p>
                 </div>
 
                 <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">

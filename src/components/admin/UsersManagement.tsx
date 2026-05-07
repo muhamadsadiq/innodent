@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Users, AlertCircle, Shield, User as UserIcon, RefreshCw } from "lucide-react";
+import { Users, AlertCircle, Shield, User as UserIcon, RefreshCw, UserPlus } from "lucide-react";
 
 type AdminUser = {
   id: string;
@@ -19,6 +19,15 @@ export default function UsersManagement() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
+  const [creatingUser, setCreatingUser] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [createSuccess, setCreateSuccess] = useState<string | null>(null);
+  const [newAdmin, setNewAdmin] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
 
   useEffect(() => {
     void loadUsers();
@@ -57,6 +66,54 @@ export default function UsersManagement() {
     }
   };
 
+  const handleCreateAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreateError(null);
+    setCreateSuccess(null);
+
+    const name = newAdmin.name.trim();
+    const email = newAdmin.email.trim();
+
+    if (!name || !email || !newAdmin.password) {
+      setCreateError("Name, email, and password are required.");
+      return;
+    }
+
+    if (newAdmin.password.length < 8) {
+      setCreateError("Password must be at least 8 characters.");
+      return;
+    }
+
+    if (newAdmin.password !== newAdmin.confirmPassword) {
+      setCreateError("Passwords do not match.");
+      return;
+    }
+
+    try {
+      setCreatingUser(true);
+      const response = await fetch("/api/admin/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, email, password: newAdmin.password }),
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => ({}))) as { error?: string };
+        throw new Error(payload.error || `Failed to create user (${response.status}).`);
+      }
+
+      setCreateSuccess("Admin user created successfully.");
+      setNewAdmin({ name: "", email: "", password: "", confirmPassword: "" });
+      await loadUsers();
+    } catch (err) {
+      setCreateError(err instanceof Error ? err.message : "Failed to create admin user.");
+    } finally {
+      setCreatingUser(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -90,6 +147,57 @@ export default function UsersManagement() {
             {refreshing ? "Refreshing..." : "Refresh"}
           </button>
         </div>
+      </div>
+
+      <div className="rounded-xl border-2 border-gray-100 bg-white p-6 shadow-lg">
+        <h2 className="mb-4 flex items-center gap-2 text-xl font-bold text-gray-800">
+          <UserPlus size={22} className="text-[var(--color-dark-teal)]" />
+          Add Admin User
+        </h2>
+
+        <form onSubmit={handleCreateAdmin} className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <input
+            type="text"
+            placeholder="Full name"
+            value={newAdmin.name}
+            onChange={(e) => setNewAdmin((prev) => ({ ...prev, name: e.target.value }))}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[var(--color-dark-teal)] focus:outline-none"
+          />
+          <input
+            type="email"
+            placeholder="Email address"
+            value={newAdmin.email}
+            onChange={(e) => setNewAdmin((prev) => ({ ...prev, email: e.target.value }))}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[var(--color-dark-teal)] focus:outline-none"
+          />
+          <input
+            type="password"
+            placeholder="Password (min 8 characters)"
+            value={newAdmin.password}
+            onChange={(e) => setNewAdmin((prev) => ({ ...prev, password: e.target.value }))}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[var(--color-dark-teal)] focus:outline-none"
+          />
+          <input
+            type="password"
+            placeholder="Confirm password"
+            value={newAdmin.confirmPassword}
+            onChange={(e) => setNewAdmin((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[var(--color-dark-teal)] focus:outline-none"
+          />
+
+          <div className="lg:col-span-2 flex flex-wrap items-center gap-3">
+            <button
+              type="submit"
+              disabled={creatingUser}
+              className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-dark-teal)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <UserPlus size={16} />
+              {creatingUser ? "Creating..." : "Create Admin"}
+            </button>
+            {createError && <p className="text-sm font-medium text-red-600">{createError}</p>}
+            {createSuccess && <p className="text-sm font-medium text-green-700">{createSuccess}</p>}
+          </div>
+        </form>
       </div>
 
       {/* Users Table */}

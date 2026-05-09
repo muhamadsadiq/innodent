@@ -309,11 +309,27 @@ export default async function HomePage() {
             </div>
             <div className="text-center 2xl:leading-[57.578px]">
               <h1 className="text-[16px] font-light sm:text-[20px] 2xl:text-[26px]">Office Phone Number</h1>
-              <h1 className="text-[22px] font-semibold sm:text-[28px] 2xl:text-[36px]">+82 70 7576 4663</h1>
+              <a
+                href="tel:+827075764663"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[22px] font-semibold transition-colors hover:text-[var(--color-blue)] sm:text-[28px] 2xl:text-[36px]"
+                aria-label="Call +82 70 7576 4663"
+              >
+                +82 70 7576 4663
+              </a>
             </div>
             <div className="text-center 2xl:leading-[57.578px]">
               <h1 className="text-[16px] font-light sm:text-[20px] 2xl:text-[26px]">WhatsApp Business</h1>
-              <h1 className="text-[22px] font-semibold sm:text-[28px] 2xl:text-[36px]">+82 10 5553 4663</h1>
+              <a
+                href="https://wa.me/821036473772"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[22px] font-semibold transition-colors hover:text-[var(--color-teal)] sm:text-[28px] 2xl:text-[36px]"
+                aria-label="Chat on WhatsApp at +82 10 3647 3772"
+              >
+                +82 10 5553 4663
+              </a>
             </div>
           </div>
         </div>

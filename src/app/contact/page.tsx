@@ -49,12 +49,26 @@ export default function ContactPage() {
 
         <div className="mt-6 sm:mt-7 md:mt-8 lg:mt-9 2xl:mt-10">
           <h1 className="font-light">WhatsApp Business</h1>
-          <h1 className="font-semibold">+82 10 5553 4663</h1>
+          <a
+            href="https://wa.me/821036473772"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold transition-colors hover:text-[var(--color-teal)]"
+            aria-label="Chat on WhatsApp at +82 10 3647 3772"
+          >
+            +82 10 3647 3772
+          </a>
         </div>
 
         <div className="mt-6 sm:mt-7 md:mt-8 lg:mt-9 2xl:mt-10">
           <h1 className="font-light">Office Phone Number</h1>
-          <h1 className="font-semibold">+82 70 7576 4663</h1>
+          <a
+            href="tel:+827075764663"
+            className="font-semibold transition-colors hover:text-[var(--color-blue)]"
+            aria-label="Call +82 70 7576 4663"
+          >
+            +82 70 7576 4663
+          </a>
         </div>
       </div>
     </div>

@@ -50,11 +50,11 @@ export default function ContactPage() {
         <div className="mt-6 sm:mt-7 md:mt-8 lg:mt-9 2xl:mt-10">
           <h1 className="font-light">WhatsApp Business</h1>
           <a
-            href="https://wa.me/821036473772"
+            href="https://wa.me/821055534663"
             target="_blank"
             rel="noopener noreferrer"
             className="font-semibold transition-colors hover:text-[var(--color-teal)]"
-            aria-label="Chat on WhatsApp at +82 10 3647 3772"
+            aria-label="Chat on WhatsApp at +82 10 5553 4663"
           >
             +82 10 3647 3772
           </a>

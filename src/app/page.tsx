@@ -322,11 +322,11 @@ export default async function HomePage() {
             <div className="text-center 2xl:leading-[57.578px]">
               <h1 className="text-[16px] font-light sm:text-[20px] 2xl:text-[26px]">WhatsApp Business</h1>
               <a
-                href="https://wa.me/821036473772"
+                href="https://wa.me/821055534663"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[22px] font-semibold transition-colors hover:text-[var(--color-teal)] sm:text-[28px] 2xl:text-[36px]"
-                aria-label="Chat on WhatsApp at +82 10 3647 3772"
+                aria-label="Chat on WhatsApp at +82 10 5553 4663"
               >
                 +82 10 5553 4663
               </a>

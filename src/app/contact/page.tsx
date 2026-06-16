@@ -56,7 +56,7 @@ export default function ContactPage() {
             className="font-semibold transition-colors hover:text-[var(--color-teal)]"
             aria-label="Chat on WhatsApp at +82 10 5553 4663"
           >
-            +82 10 3647 3772
+            +82 10 5553 4663
           </a>
         </div>
 
